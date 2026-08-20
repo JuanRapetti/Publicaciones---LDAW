@@ -6,7 +6,7 @@ export default class usuario {
 
   //const
   constructor(nombre, email) {
-    this.nombre = this.nombre;
+    this.nombre = nombre;
     this.email = email;
     this.fechaRegistro = new Date();
   }

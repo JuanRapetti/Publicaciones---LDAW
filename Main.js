@@ -2,21 +2,31 @@ import Usuario from "./Usuario.js";
 import Publicacion from "./Publicacion.js";
 import RepositorioPublicaciones from "./RepositorioPublicaciones.js";
 
-const autor1 = new usuario("Juan Pérez", "juan.perez@example.com");
-const autor2 = new usuario("María López", "maria.lopez@example.com");
-const autor3 = new usuario("Carlos García", "carlos.garcia@example.com");
-const autor4 = new usuario("Ana Torres", "ana.torres@example.com");
+// ==========================
+// USUARIOS
+// ==========================
+
+const autor1 = new Usuario("Juan Pérez", "juan.perez@example.com");
+const autor2 = new Usuario("María López", "maria.lopez@example.com");
+const autor3 = new Usuario("Carlos García", "carlos.garcia@example.com");
+const autor4 = new Usuario("Ana Torres", "ana.torres@example.com");
+
+// ==========================
+// PUBLICACIONES
+// ==========================
 
 const publicacion1 = new Publicacion(
   "Busco apuntes algebra",
   "Busco apuntes de algebra analitica para mi clase",
   autor1,
 );
+
 const publicacion2 = new Publicacion(
   "Necesito ayuda con programación",
   "Estoy teniendo problemas con un ejercicio de programación de poo",
   autor2,
 );
+
 const publicacion3 = new Publicacion(
   "Busco ayuda con matemáticas",
   "Necesito ayuda con los ejercicios de matemáticas 1",
@@ -31,7 +41,29 @@ const publicacion4 = new Publicacion(
   autor4,
 );
 
-const publicaciones = [publicacion1, publicacion2, publicacion3, publicacion4];
+const publicacion5 = new Publicacion(
+  "Ofrezco clases particulares",
+  "Ofrezco clases particulares de matemáticas y física para estudiantes de secundaria",
+  autor1,
+);
+
+publicacion5.activa = false;
+
+// ==========================
+// ARRAY DE PUBLICACIONES
+// ==========================
+
+const publicaciones = [
+  publicacion1,
+  publicacion2,
+  publicacion3,
+  publicacion4,
+  publicacion5,
+];
+
+// ==========================
+// FOREACH
+// ==========================
 
 publicaciones.forEach((publicacion) => {
   console.log("--------------------");
@@ -40,57 +72,92 @@ publicaciones.forEach((publicacion) => {
   console.log();
 });
 
-const publicacion5 = new Publicacion(
-  "Ofrezco clases particulares",
-  "Ofrezco clases particulares de matemáticas y física para estudiantes de secundaria",
-  autor1,
-);
-publicacion5.activa = false;
+// ==========================
+// FILTER
+// ==========================
 
-publicaciones.push(publicacion5);
-
-//Publis activas
-
-let publicacionesActivas = publicaciones.filter((publicacion) =>
+const publicacionesActivas = publicaciones.filter((publicacion) =>
   publicacion.estaActiva(),
 );
 
-let cantidadPublicacionesActivas = publicacionesActivas.length;
 console.log("--------------------");
-console.log();
 console.log(
-  `Cantidad de publicaciones activas: ${cantidadPublicacionesActivas}`,
+  `Cantidad de publicaciones activas: ${publicacionesActivas.length}`,
 );
-console.log();
 console.log("--------------------");
 console.log("Publicaciones activas:");
 
 publicacionesActivas.forEach((publicacion) => {
-  console.log(`${publicacion.titulo}`);
+  console.log(publicacion.titulo);
 });
-console.log();
+
 console.log("--------------------");
 
-const publicacionesJSON = JSON.stringify(publicaciones, null, 2);
-console.log(publicacionesJSON); // El método JSON.stringify() no incluye métodos de un objeto en la representación JSON, solamente se incluyen las propiedades del objeto. Por eso, console.log(publicacionesJSON) solo muestra los atributos de las publicaciones, como titulo, descripcion, autor, fechaPublicacion y activa.
+// ==========================
+// FIND
+// ==========================
 
-const publicacion6 = new Publicacion(
-  "Busco comisión para proyecto de Estructuras de Datos",
-  "Estoy buscando comision para hacer el proyecto final de estructuras de datos",
-  autor2,
+const primeraPublicacionJuanPerez = publicaciones.find((publicacion) =>
+  publicacion.esDeAutor("Juan Pérez"),
 );
 
-//FIND
-
-const primeraPublicacionMariaLopez = publicaciones.find((publicacion) =>
-  publicacion.esDeAutor("María López"),
-);
-
-if (primeraPublicacionMariaLopez) {
-  console.log("--------------------");
-  console.log("Primera publicación de María López:");
-  console.log(primeraPublicacionMariaLopez.mostrarResumen());
+if (primeraPublicacionJuanPerez) {
+  console.log("Primera publicación de Juan Pérez:");
+  console.log(primeraPublicacionJuanPerez.mostrarResumen());
   console.log();
 } else {
-  console.log("María López no tiene publicaciones.");
+  console.log("Juan Pérez no tiene publicaciones.");
+}
+
+// ==========================
+// JSON
+// ==========================
+
+const publicacionesJSON = JSON.stringify(publicaciones, null, 2);
+console.log(publicacionesJSON);
+
+// ==========================
+// REPOSITORIO
+// ==========================
+
+const repositorio = new RepositorioPublicaciones();
+
+publicaciones.forEach((publicacion) => {
+  repositorio.agregar(publicacion);
+});
+
+// ==========================
+// TEST: AGREGAR
+// ==========================
+
+const nuevaPublicacion = new Publicacion(
+  "Busco compañero de estudio",
+  "Busco compañero para estudiar programación",
+  autor1,
+);
+
+repositorio.agregar(nuevaPublicacion);
+
+console.log("--------------------");
+console.log("TEST AGREGAR");
+console.log("Publicación agregada:", nuevaPublicacion.titulo);
+
+// ==========================
+// TEST: BUSCAR POR USUARIO
+// ==========================
+
+//autor 1 es Juan Perez
+console.log("--------------------");
+console.log("TEST BUSCAR POR USUARIO");
+
+const publicacionesJuan = repositorio.buscarPorUsuario(autor1.nombre);
+
+if (publicacionesJuan.length > 0) {
+  console.log(`Publicaciones de ${autor1.nombre}:`);
+
+  publicacionesJuan.forEach((publicacion) => {
+    console.log(publicacion.titulo);
+  });
+} else {
+  console.log(`${autor1.nombre} no tiene publicaciones.`);
 }
