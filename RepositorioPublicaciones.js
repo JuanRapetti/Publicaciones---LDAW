@@ -1,7 +1,9 @@
-export default class RepositorioPublicaciones {
-  publicaciones;
+import { validarPublicacion } from "./validaciones.js";
+import { EventEmitter } from "./EventEmitter.js";
 
+export default class RepositorioPublicaciones extends EventEmitter {
   constructor() {
+    super();
     this.publicaciones = [];
   }
 
@@ -21,5 +23,17 @@ export default class RepositorioPublicaciones {
 
   cantidadTotal() {
     return this.publicaciones.length;
+  }
+
+  listarResumenes() {
+    return this.publicaciones.map((publicacion) =>
+      publicacion.mostrarResumen(),
+    );
+  }
+
+  filtrarPorClase(claseConstructor) {
+    return this.publicaciones.filter(
+      (publicacion) => publicacion instanceof claseConstructor,
+    );
   }
 }

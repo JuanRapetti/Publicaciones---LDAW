@@ -9,6 +9,8 @@ export default class usuario {
     this.nombre = nombre;
     this.email = email;
     this.fechaRegistro = new Date();
+
+    this.contactos = [];
   }
 
   mostrarPerfil() {

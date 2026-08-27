@@ -213,3 +213,17 @@ if (publicacionesJuan.length > 0) {
 } else {
   console.log(`${autor1.nombre} no tiene publicaciones.`);
 }
+
+//TODO
+//TEST CONTACTOS (a chequear)
+autor1.agregarContacto(autor2);
+autor1.agregarContacto(autor3);
+
+console.log("--------------------");
+console.log("TEST CONTACTOS");
+
+console.log(`Contactos de ${autor1.nombre}:`);
+
+autor1.contactos.forEach((contacto) => {
+  console.log(contacto.nombre);
+});
