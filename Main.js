@@ -28,12 +28,16 @@ const publicacion2 = new PublicacionServicio(
   "Necesito ayuda con programación",
   "Estoy teniendo problemas con un ejercicio de programación de poo",
   autor2,
+  "Virtual",
+  "1 hora",
 );
 
 const publicacion3 = new PublicacionServicio(
   "Busco ayuda con matemáticas",
   "Necesito ayuda con los ejercicios de matemáticas 1",
   autor3,
+  "Presencial",
+  "2 horas",
 );
 
 publicacion3.activa = false;
@@ -49,9 +53,30 @@ const publicacion5 = new PublicacionServicio(
   "Ofrezco clases particulares",
   "Ofrezco clases particulares de matemáticas y física para estudiantes de secundaria",
   autor1,
+  "Presencial",
+  "2 horas",
 );
 
 publicacion5.activa = false;
+
+// ==========================
+// TERCERA INSTANCIA DE CADA SUBCLASE
+// ==========================
+
+const publicacion6 = new PublicacionVenta(
+  "Vendo calculadora científica",
+  "Calculadora científica usada en buen estado",
+  autor1,
+  15000,
+);
+
+const publicacion7 = new PublicacionServicio(
+  "Ofrezco clases de física",
+  "Clases particulares de física para estudiantes de secundaria",
+  autor2,
+  "Virtual",
+  "90 minutos",
+);
 
 // ==========================
 // ARRAY DE PUBLICACIONES
@@ -63,17 +88,29 @@ const publicaciones = [
   publicacion3,
   publicacion4,
   publicacion5,
+  publicacion6,
+  publicacion7,
 ];
 
 // ==========================
-// FOREACH
+// RECORRIDO POLIMÓRFICO
 // ==========================
 
+console.log("--------------------");
+console.log("RESÚMENES POLIMÓRFICOS");
+
 publicaciones.forEach((publicacion) => {
-  console.log("--------------------");
   console.log(publicacion.mostrarResumen());
-  console.log(`Activa: ${publicacion.estaActiva()}`);
-  console.log();
+});
+
+// ==========================
+// ESTADO DE LAS PUBLICACIONES
+// ==========================
+
+console.log("--------------------");
+
+publicaciones.forEach((publicacion) => {
+  console.log(`${publicacion.titulo} - Activa: ${publicacion.estaActiva()}`);
 });
 
 // ==========================
