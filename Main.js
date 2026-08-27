@@ -1,5 +1,7 @@
 import Usuario from "./Usuario.js";
 import Publicacion from "./Publicacion.js";
+import PublicacionVenta from "./PublicacionVenta.js";
+import PublicacionServicio from "./PublicacionServicio.js";
 import RepositorioPublicaciones from "./RepositorioPublicaciones.js";
 
 // ==========================
@@ -15,19 +17,20 @@ const autor4 = new Usuario("Ana Torres", "ana.torres@example.com");
 // PUBLICACIONES
 // ==========================
 
-const publicacion1 = new Publicacion(
+const publicacion1 = new PublicacionVenta(
   "Busco apuntes algebra",
   "Busco apuntes de algebra analitica para mi clase",
   autor1,
+  5000,
 );
 
-const publicacion2 = new Publicacion(
+const publicacion2 = new PublicacionServicio(
   "Necesito ayuda con programación",
   "Estoy teniendo problemas con un ejercicio de programación de poo",
   autor2,
 );
 
-const publicacion3 = new Publicacion(
+const publicacion3 = new PublicacionServicio(
   "Busco ayuda con matemáticas",
   "Necesito ayuda con los ejercicios de matemáticas 1",
   autor3,
@@ -35,13 +38,14 @@ const publicacion3 = new Publicacion(
 
 publicacion3.activa = false;
 
-const publicacion4 = new Publicacion(
+const publicacion4 = new PublicacionVenta(
   "Vendo libros de texto",
   "Tengo libros de texto que ya no necesito sobre patrones de diseño",
   autor4,
+  10000,
 );
 
-const publicacion5 = new Publicacion(
+const publicacion5 = new PublicacionServicio(
   "Ofrezco clases particulares",
   "Ofrezco clases particulares de matemáticas y física para estudiantes de secundaria",
   autor1,
@@ -98,7 +102,7 @@ console.log("--------------------");
 // ==========================
 
 const primeraPublicacionJuanPerez = publicaciones.find((publicacion) =>
-  publicacion.esDeAutor("Juan Pérez"),
+  publicacion.esDeAutor(autor1.nombre),
 );
 
 if (primeraPublicacionJuanPerez) {
@@ -108,6 +112,17 @@ if (primeraPublicacionJuanPerez) {
 } else {
   console.log("Juan Pérez no tiene publicaciones.");
 }
+
+// ==========================
+// INSTANCEOF
+// ==========================
+
+console.log("--------------------");
+console.log("TEST INSTANCEOF");
+
+publicaciones.forEach((publicacion) => {
+  console.log(`${publicacion.titulo} -> ${publicacion instanceof Publicacion}`);
+});
 
 // ==========================
 // JSON
@@ -130,10 +145,11 @@ publicaciones.forEach((publicacion) => {
 // TEST: AGREGAR
 // ==========================
 
-const nuevaPublicacion = new Publicacion(
+const nuevaPublicacion = new PublicacionVenta(
   "Busco compañero de estudio",
   "Busco compañero para estudiar programación",
   autor1,
+  5000,
 );
 
 repositorio.agregar(nuevaPublicacion);
@@ -146,7 +162,6 @@ console.log("Publicación agregada:", nuevaPublicacion.titulo);
 // TEST: BUSCAR POR USUARIO
 // ==========================
 
-//autor 1 es Juan Perez
 console.log("--------------------");
 console.log("TEST BUSCAR POR USUARIO");
 
