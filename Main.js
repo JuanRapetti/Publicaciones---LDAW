@@ -4,18 +4,46 @@ import PublicacionVenta from "./PublicacionVenta.js";
 import PublicacionServicio from "./PublicacionServicio.js";
 import RepositorioPublicaciones from "./RepositorioPublicaciones.js";
 
-// ==========================
-// USUARIOS
-// ==========================
+// ==========================================
+// 1. INICIALIZACIÓN DEL REPOSITORIO Y REGLAS
+// ==========================================
+
+const repositorio = new RepositorioPublicaciones();
+
+// Reglas globales que se le pasarán al repositorio al momento de agregar
+const reglasDeValidacion = {
+  longitudMinimaTitulo: 5,
+  precioMinimo: 10,
+};
+
+// ==========================================
+// 2. LISTENERS (PRÁCTICA 6 - EVENT EMITTER)
+// ==========================================
+
+repositorio.on("publicacionAgregada", (publicacion) => {
+  console.log(
+    `[Listener 1 - Log]: Se agregó la publicación -> "${publicacion.titulo}"`,
+  );
+});
+
+repositorio.on("publicacionAgregada", (publicacion) => {
+  console.log(
+    `[Listener 2 - Métrica]: Total de publicaciones en repositorio -> ${repositorio.publicaciones.length}`,
+  );
+});
+
+// ==========================================
+// 3. INSTANCIACIÓN DE USUARIOS
+// ==========================================
 
 const autor1 = new Usuario("Juan Pérez", "juan.perez@example.com");
 const autor2 = new Usuario("María López", "maria.lopez@example.com");
 const autor3 = new Usuario("Carlos García", "carlos.garcia@example.com");
 const autor4 = new Usuario("Ana Torres", "ana.torres@example.com");
 
-// ==========================
-// PUBLICACIONES
-// ==========================
+// ==========================================
+// 4. INSTANCIACIÓN DE PUBLICACIONES
+// ==========================================
 
 const publicacion1 = new PublicacionVenta(
   "Busco apuntes algebra",
@@ -39,7 +67,6 @@ const publicacion3 = new PublicacionServicio(
   "Presencial",
   "2 horas",
 );
-
 publicacion3.activa = false;
 
 const publicacion4 = new PublicacionVenta(
@@ -56,12 +83,7 @@ const publicacion5 = new PublicacionServicio(
   "Presencial",
   "2 horas",
 );
-
 publicacion5.activa = false;
-
-// ==========================
-// TERCERA INSTANCIA DE CADA SUBCLASE
-// ==========================
 
 const publicacion6 = new PublicacionVenta(
   "Vendo calculadora científica",
@@ -78,11 +100,7 @@ const publicacion7 = new PublicacionServicio(
   "90 minutos",
 );
 
-// ==========================
-// ARRAY DE PUBLICACIONES
-// ==========================
-
-const publicaciones = [
+const publicacionesIniciales = [
   publicacion1,
   publicacion2,
   publicacion3,
@@ -92,138 +110,114 @@ const publicaciones = [
   publicacion7,
 ];
 
-// ==========================
-// RECORRIDO POLIMÓRFICO
-// ==========================
+// ==========================================
+// 5. CARGA EN EL REPOSITORIO
+// ==========================================
 
-console.log("--------------------");
-console.log("RESÚMENES POLIMÓRFICOS");
+console.log("==========================================");
+console.log("CARGA DE PUBLICACIONES AL REPOSITORIO");
+console.log("==========================================");
 
-publicaciones.forEach((publicacion) => {
-  console.log(publicacion.mostrarResumen());
+// repositorio.agregar() maneja internamente la validación recibiendo las reglas como parámetro
+publicacionesIniciales.forEach((pub) => {
+  repositorio.agregar(pub, reglasDeValidacion);
 });
 
-// ==========================
-// ESTADO DE LAS PUBLICACIONES
-// ==========================
+// ==========================================
+// 6. PRUEBAS MÉTODOS POLIMÓRFICOS Y FILTROS
+// ==========================================
 
-console.log("--------------------");
+console.log("\n==========================================");
+console.log("1. RESÚMENES POLIMÓRFICOS (listarResumenes)");
+console.log("==========================================");
 
-publicaciones.forEach((publicacion) => {
-  console.log(`${publicacion.titulo} - Activa: ${publicacion.estaActiva()}`);
-});
-
-// ==========================
-// FILTER
-// ==========================
-
-const publicacionesActivas = publicaciones.filter((publicacion) =>
-  publicacion.estaActiva(),
-);
-
-console.log("--------------------");
-console.log(
-  `Cantidad de publicaciones activas: ${publicacionesActivas.length}`,
-);
-console.log("--------------------");
-console.log("Publicaciones activas:");
-
-publicacionesActivas.forEach((publicacion) => {
-  console.log(publicacion.titulo);
-});
-
-console.log("--------------------");
-
-// ==========================
-// FIND
-// ==========================
-
-const primeraPublicacionJuanPerez = publicaciones.find((publicacion) =>
-  publicacion.esDeAutor(autor1.nombre),
-);
-
-if (primeraPublicacionJuanPerez) {
-  console.log("Primera publicación de Juan Pérez:");
-  console.log(primeraPublicacionJuanPerez.mostrarResumen());
-  console.log();
+if (typeof repositorio.listarResumenes === "function") {
+  repositorio.listarResumenes().forEach((resumen) => console.log(resumen));
 } else {
-  console.log("Juan Pérez no tiene publicaciones.");
+  publicacionesIniciales.forEach((pub) => console.log(pub.mostrarResumen()));
 }
 
-// ==========================
-// INSTANCEOF
-// ==========================
+console.log("\n==========================================");
+console.log("2. FILTRAR POR TIPO (filtrarPorTipo)");
+console.log("==========================================");
 
-console.log("--------------------");
-console.log("TEST INSTANCEOF");
-
-publicaciones.forEach((publicacion) => {
-  console.log(`${publicacion.titulo} -> ${publicacion instanceof Publicacion}`);
-});
-
-// ==========================
-// JSON
-// ==========================
-
-const publicacionesJSON = JSON.stringify(publicaciones, null, 2);
-console.log(publicacionesJSON);
-
-// ==========================
-// REPOSITORIO
-// ==========================
-
-const repositorio = new RepositorioPublicaciones();
-
-publicaciones.forEach((publicacion) => {
-  repositorio.agregar(publicacion);
-});
-
-// ==========================
-// TEST: AGREGAR
-// ==========================
-
-const nuevaPublicacion = new PublicacionVenta(
-  "Busco compañero de estudio",
-  "Busco compañero para estudiar programación",
-  autor1,
-  5000,
-);
-
-repositorio.agregar(nuevaPublicacion);
-
-console.log("--------------------");
-console.log("TEST AGREGAR");
-console.log("Publicación agregada:", nuevaPublicacion.titulo);
-
-// ==========================
-// TEST: BUSCAR POR USUARIO
-// ==========================
-
-console.log("--------------------");
-console.log("TEST BUSCAR POR USUARIO");
-
-const publicacionesJuan = repositorio.buscarPorUsuario(autor1.nombre);
-
-if (publicacionesJuan.length > 0) {
-  console.log(`Publicaciones de ${autor1.nombre}:`);
-
-  publicacionesJuan.forEach((publicacion) => {
-    console.log(publicacion.titulo);
-  });
-} else {
-  console.log(`${autor1.nombre} no tiene publicaciones.`);
+if (typeof repositorio.filtrarPorTipo === "function") {
+  const servicios = repositorio.filtrarPorTipo(PublicacionServicio);
+  console.log(`Servicios encontrados: ${servicios.length}`);
+  servicios.forEach((s) => console.log(`- ${s.titulo}`));
 }
 
-//TODO
-//TEST CONTACTOS (a chequear)
+console.log("\n==========================================");
+console.log("3. AUTO-ASOCIACIÓN CONTACTOS (USUARIO)");
+console.log("==========================================");
+
 autor1.agregarContacto(autor2);
 autor1.agregarContacto(autor3);
 
-console.log("--------------------");
-console.log("TEST CONTACTOS");
-
 console.log(`Contactos de ${autor1.nombre}:`);
-
 autor1.contactos.forEach((contacto) => {
-  console.log(contacto.nombre);
+  console.log(` - ${contacto.nombre}`);
 });
+
+// ==========================================
+// 7. OPERACIONES ASINCRÓNICAS (PRÁCTICA 6)
+// ==========================================
+
+function publicarConDemora(publicacion, callback) {
+  console.log("\nIniciando publicación con demora (Callback)...");
+  setTimeout(() => {
+    repositorio.agregar(publicacion, reglasDeValidacion);
+    if (callback) callback(publicacion);
+  }, 2000);
+}
+
+function esperarDemora(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function publicarConDemoraAsync(publicacion) {
+  console.log("\nIniciando publicación con demora (Async/Await)...");
+  await esperarDemora(2000);
+  repositorio.agregar(publicacion, reglasDeValidacion);
+  console.log(`Publicación async lista: "${publicacion.titulo}"`);
+}
+
+// Ejecución de pruebas asincrónicas en secuencia
+(async function ejecutarPruebasAsincronicas() {
+  console.log("\n==========================================");
+  console.log("4. PRUEBAS ASINCRÓNICAS");
+  console.log("==========================================");
+
+  // Prueba Callback
+  console.log("--- INICIO PRUEBA CALLBACK ---");
+  const pubCallback = new PublicacionVenta(
+    "Publicación con Callback",
+    "Descripción válida de prueba con callback",
+    autor1,
+    2000,
+  );
+
+  publicarConDemora(pubCallback, (pub) => {
+    console.log(`Callback ejecutado: "${pub.titulo}" fue procesada con éxito.`);
+  });
+  console.log(
+    "-> Mensaje síncrono: Este log aparece INMEDIATAMENTE después de llamar a publicarConDemora.",
+  );
+
+  // Pausa para que no se pisen las consolas de Callback y Async/Await
+  await esperarDemora(2500);
+
+  // Prueba Async/Await
+  console.log("\n--- INICIO PRUEBA ASYNC/AWAIT ---");
+  const pubAsync = new PublicacionVenta(
+    "Publicación Async/Await",
+    "Descripción válida de prueba async/await",
+    autor2,
+    3000,
+  );
+
+  await publicarConDemoraAsync(pubAsync);
+  console.log(
+    "-> Mensaje tras await: Este log aparece DESPUÉS de que termina la publicación async.",
+  );
+})();

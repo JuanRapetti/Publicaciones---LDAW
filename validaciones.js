@@ -1,25 +1,18 @@
 export function validarPublicacion(publicacion, reglas) {
-  let publicacionValida = true;
-  //validar longitud titulo
+  // Validar título según la regla definida
   if (
-    reglas.longitudTituloMinima &&
-    publicacion.titulo.length < reglas.longitudTituloMinima
+    reglas.longitudMinimaTitulo &&
+    publicacion.titulo.length < reglas.longitudMinimaTitulo
   ) {
-    publicacionValida = false;
+    return false;
   }
 
-  //validar longitud descripcion
-  if (
-    reglas.longitudDescripcionMinima &&
-    publicacion.descripcion.length < reglas.longitudDescripcionMinima
-  ) {
-    publicacionValida = false;
+  // Validar precio si la regla existe y la publicación posee atributo precio
+  if (reglas.precioMinimo !== undefined && publicacion.precio !== undefined) {
+    if (publicacion.precio < reglas.precioMinimo) {
+      return false;
+    }
   }
 
-  //validar autor
-  if (reglas.autorRequerido && !publicacion.autor) {
-    publicacionValida = false;
-  }
-
-  return publicacionValida;
+  return true; // Si pasó todas las reglas
 }

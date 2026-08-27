@@ -1,5 +1,5 @@
+import { EventEmitter } from "node:events";
 import { validarPublicacion } from "./validaciones.js";
-import { EventEmitter } from "./EventEmitter.js";
 
 export default class RepositorioPublicaciones extends EventEmitter {
   constructor() {
@@ -7,8 +7,18 @@ export default class RepositorioPublicaciones extends EventEmitter {
     this.publicaciones = [];
   }
 
-  agregar(publicacion) {
+  agregar(publicacion, reglas = null) {
+    // Si se pasan reglas y no las cumple, interrumpe el flujo
+    if (reglas && !validarPublicacion(publicacion, reglas)) {
+      console.log(
+        `[Error]: La publicación "${publicacion.titulo}" no superó la validación.`,
+      );
+      return false;
+    }
+
     this.publicaciones.push(publicacion);
+    this.emit("publicacionAgregada", publicacion);
+    return true;
   }
 
   buscarPorUsuario(nombreUsuario) {

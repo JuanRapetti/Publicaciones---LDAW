@@ -16,4 +16,8 @@ export default class usuario {
   mostrarPerfil() {
     return `Nombre: ${this.nombre} Email: ${this.email}`;
   }
+
+  agregarContacto(otroUsuario) {
+    this.contactos.push(otroUsuario);
+  }
 }

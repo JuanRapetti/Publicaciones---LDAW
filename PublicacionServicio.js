@@ -1,6 +1,6 @@
-import PublicacionVenta from "./Publicacion.js";
+import Publicacion from "./Publicacion.js";
 
-export default class PublicacionVenta extends Publicacion {
+export default class PublicacionServicio extends Publicacion {
   constructor(titulo, descripcion, autor, modalidad, duracion) {
     super(titulo, descripcion, autor);
 
