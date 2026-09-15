@@ -19,6 +19,7 @@ const camposEspecificos = document.getElementById("campos-especificos");
 const divVistaPrevia = document.getElementById("vista-previa");
 const listaPublicaciones = document.getElementById("lista-publicaciones");
 const ayudaEmail = document.getElementById("ayuda-email");
+const botonPublicar = document.getElementById("boton-publicar");
 
 // ==========================================
 // 2. PARTE 2: OBSERVADOR DE EVENTOS
@@ -81,3 +82,72 @@ selectTipo.addEventListener("change", actualizarCamposEspecificos);
 
 actualizarCamposEspecificos();
 actualizarVistaPrevia();
+
+//EJ 5 BLUR Y FOCUS
+function mostrarAyudaEmail() {
+  ayudaEmail.textContent = "Usá un email válido del autor";
+}
+function ocultarAyudaEmail() {
+  ayudaEmail.textContent = "";
+}
+inputEmail.addEventListener("focus", mostrarAyudaEmail);
+inputEmail.addEventListener("blur", ocultarAyudaEmail);
+
+//EJ 6
+const publicaciones = [];
+function crearPublicacionDesdeFormulario() {
+  const usuario = new Usuario(inputAutor.value, inputEmail.value);
+  if (selectTipo.value === "venta") {
+    return new PublicacionVenta(
+      inputTitulo.value,
+      inputDescripcion.value,
+      usuario,
+      Number(document.querySelector("#precio").value),
+    );
+  }
+  return new PublicacionServicio(
+    inputTitulo.value,
+    inputDescripcion.value,
+    usuario,
+    document.querySelector("#modalidad").value,
+    Number(document.querySelector("#duracion").value),
+  );
+}
+function manejarEnvio(evento) {
+  evento.preventDefault();
+  const publicacion = crearPublicacionDesdeFormulario();
+  publicaciones.push(publicacion);
+  agregarTarjeta(publicacion);
+  formPublicacion.reset();
+  actualizarCamposEspecificos();
+  actualizarVistaPrevia();
+}
+formPublicacion.addEventListener("submit", manejarEnvio);
+
+function agregarTarjeta(publicacion) {
+  const tarjeta = document.createElement("div");
+  tarjeta.classList.add("tarjeta");
+
+  const resumen = document.createElement("p");
+  resumen.textContent = publicacion.mostrarResumen();
+  tarjeta.appendChild(resumen);
+
+  const estado = document.createElement("p");
+  estado.textContent = publicacion.estaActiva() ? "Activa" : "Inactiva";
+  tarjeta.appendChild(estado);
+
+  function manejarBaja(evento) {
+    console.log(evento.type, evento.target);
+    publicacion.darDeBaja();
+    estado.textContent = "Inactiva";
+    botonPublicar.disabled = true;
+  }
+
+  const botonBaja = document.createElement("button");
+  botonBaja.textContent = "Dar de baja";
+  tarjeta.appendChild(botonBaja);
+
+  botonBaja.addEventListener("click", manejarBaja);
+
+  listaPublicaciones.appendChild(tarjeta);
+}
