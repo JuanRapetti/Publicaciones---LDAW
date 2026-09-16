@@ -7,8 +7,6 @@ import PublicacionServicio from "./PublicacionServicio.js";
 // 1. INICIALIZACIÓN Y REFERENCIAS AL DOM
 // ==========================================
 
-/*const repositorio = new RepositorioPublicaciones();*/
-
 const formPublicacion = document.getElementById("form-publicacion");
 const selectTipo = document.getElementById("tipo");
 const inputTitulo = document.getElementById("titulo");
@@ -19,7 +17,8 @@ const camposEspecificos = document.getElementById("campos-especificos");
 const divVistaPrevia = document.getElementById("vista-previa");
 const listaPublicaciones = document.getElementById("lista-publicaciones");
 const ayudaEmail = document.getElementById("ayuda-email");
-const botonPublicar = document.getElementById("boton-publicar");
+
+const publicaciones = [];
 
 // ==========================================
 // 2. PARTE 2: OBSERVADOR DE EVENTOS
@@ -77,13 +76,9 @@ function actualizarCamposEspecificos() {
 selectTipo.addEventListener("change", actualizarCamposEspecificos);
 
 // ==========================================
-// 7. INICIALIZACIÓN DE LA INTERFAZ
+// 5. AYUDA VISUAL (BLUR Y FOCUS)
 // ==========================================
 
-actualizarCamposEspecificos();
-actualizarVistaPrevia();
-
-//EJ 5 BLUR Y FOCUS
 function mostrarAyudaEmail() {
   ayudaEmail.textContent = "Usá un email válido del autor";
 }
@@ -93,8 +88,10 @@ function ocultarAyudaEmail() {
 inputEmail.addEventListener("focus", mostrarAyudaEmail);
 inputEmail.addEventListener("blur", ocultarAyudaEmail);
 
-//EJ 6
-const publicaciones = [];
+// ==========================================
+// 6. CREACIÓN Y RENDERIZADO DE PUBLICACIONES
+// ==========================================
+
 function crearPublicacionDesdeFormulario() {
   const usuario = new Usuario(inputAutor.value, inputEmail.value);
   if (selectTipo.value === "venta") {
@@ -113,29 +110,7 @@ function crearPublicacionDesdeFormulario() {
     Number(document.querySelector("#duracion").value),
   );
 }
-function manejarEnvio(evento) {
-  // Previene el comportamiento por defecto de recargar la página
-  evento.preventDefault();
 
-  // Crea la instancia de la publicación a partir de los datos del formulario
-  const publicacion = crearPublicacionDesdeFormulario();
-
-  // Guarda la nueva publicación en la colección
-  publicaciones.push(publicacion);
-
-  // Limpia el formulario
-  formPublicacion.reset();
-
-  // Restablece los campos específicos y la vista previa a sus estados iniciales
-  actualizarCamposEspecificos();
-  actualizarVistaPrevia();
-
-  // Redibuja la lista completa con la nueva publicación incluida
-  renderizarPublicaciones();
-}
-formPublicacion.addEventListener("submit", manejarEnvio);
-
-//cambios acorde a tp9 ej 2
 function agregarTarjeta(publicacion) {
   const tarjeta = document.createElement("article");
   tarjeta.classList.add("tarjeta");
@@ -146,52 +121,64 @@ function agregarTarjeta(publicacion) {
   tarjeta.appendChild(resumen);
 
   const estado = document.createElement("p");
-  estado.textContent = publicacion.estaActiva() ? "Activa" : "Inactiva";
+  let textoEstado = publicacion.estaActiva() ? "Activa" : "Inactiva";
+  if (publicacion.destacada) {
+    textoEstado += " — ★ Destacada";
+  }
+  estado.textContent = textoEstado;
   tarjeta.appendChild(estado);
 
-  function manejarBaja(evento) {
-    console.log(evento.type, evento.target);
-    publicacion.darDeBaja();
-    estado.textContent = "Inactiva";
-    botonBaja.disabled = true;
-  }
-
-  //tp9 ej 2 boton destacar
+  // Botón Destacar
   const botonDestacar = document.createElement("button");
   botonDestacar.textContent = "Destacar";
-  botonDestacar.dataset.action = "destacar";
+  botonDestacar.dataset.accion = "destacar";
   tarjeta.appendChild(botonDestacar);
 
+  // Botón Dar de baja
   const botonBaja = document.createElement("button");
   botonBaja.classList.add("button");
   botonBaja.textContent = "Dar de baja";
-  botonBaja.dataset.action = "baja";
+  botonBaja.dataset.accion = "baja";
+  if (!publicacion.estaActiva()) {
+    botonBaja.disabled = true;
+  }
   tarjeta.appendChild(botonBaja);
-
-  botonBaja.addEventListener("click", manejarBaja);
 
   listaPublicaciones.appendChild(tarjeta);
 }
 
-//tp 9
-//1
-function observarClick(evento) {
-  console.log("target", evento.target);
-  console.log("currentTarget", evento.currentTarget);
+function renderizarPublicaciones() {
+  listaPublicaciones.innerHTML = "";
+  publicaciones.forEach((pub) => agregarTarjeta(pub));
 }
-listaPublicaciones.addEventListener("click", observarClick);
 
-//ej 3
+function manejarEnvio(evento) {
+  evento.preventDefault();
+
+  const publicacion = crearPublicacionDesdeFormulario();
+  publicaciones.push(publicacion);
+
+  formPublicacion.reset();
+  actualizarCamposEspecificos();
+  actualizarVistaPrevia();
+
+  renderizarPublicaciones();
+}
+
+formPublicacion.addEventListener("submit", manejarEnvio);
+
+// ==========================================
+// 7. DELEGACIÓN DE EVENTOS EN LA LISTA
+// ==========================================
+
 function manejarAccion(evento) {
   const boton = evento.target.closest("button[data-accion]");
   if (!boton || !listaPublicaciones.contains(boton)) return;
+
   const tarjeta = boton.closest("[data-id]");
   const id = Number(tarjeta.dataset.id);
-  console.log(id, boton.dataset.accion);
+  const accion = boton.dataset.accion;
 
-  const accion = boton.dataset.action;
-
-  // 1. Buscar el objeto del dominio en el array por su ID
   const publicacion = publicaciones.find((p) => p.id === id);
   if (!publicacion) return;
 
@@ -200,10 +187,12 @@ function manejarAccion(evento) {
 
   renderizarPublicaciones();
 }
+
 listaPublicaciones.addEventListener("click", manejarAccion);
 
-//ej 4
-function renderizarPublicaciones() {
-  listaPublicaciones.innerHTML = ""; // Limpiamos la lista para evitar duplicados
-  publicaciones.forEach((pub) => agregarTarjeta(pub));
-}
+// ==========================================
+// 8. INICIALIZACIÓN DE LA INTERFAZ
+// ==========================================
+
+actualizarCamposEspecificos();
+actualizarVistaPrevia();
