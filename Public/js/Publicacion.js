@@ -11,6 +11,8 @@ export default class Publicacion {
     this.autor = autor;
     this.fechaPublicacion = new Date();
     this.activa = true;
+    this.destacada = false;
+    this.id = Date.now();
   }
 
   mostrarResumen() {
@@ -23,6 +25,14 @@ export default class Publicacion {
 
   esDeAutor(nombre) {
     return this.autor.nombre === nombre;
+  }
+
+  destacar() {
+    this.destacada = true;
+  }
+
+  opacar() {
+    this.destacada = false;
   }
 
   diasPublicada() {
