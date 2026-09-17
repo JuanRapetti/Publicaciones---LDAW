@@ -15,6 +15,11 @@ export default class Publicacion {
     this.id = Date.now();
   }
 
+  get resumen() {
+    const estadoTexto = this.estaActiva() ? "Activa" : "Inactiva";
+    return `${this.titulo} — ${this.autor.nombre} (${estadoTexto})`;
+  }
+
   mostrarResumen() {
     return `${this.titulo} - ${this.autor.nombre}`;
   }
