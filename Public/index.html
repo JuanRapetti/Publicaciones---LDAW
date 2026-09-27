@@ -3,17 +3,49 @@
   <head>
     <meta charset="UTF-8" />
     <title>Gestor de Publicaciones</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
     <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
+    <h1>Gestor de Publicaciones de la Comunidad</h1>
+
+    <section id="panel-estado">
+      <h2>Estado de la Comunidad</h2>
+      <button type="button" id="consultar">Consultar estado</button>
+      <button type="button" id="consultar-inactivas">
+        Consultar inactivas
+      </button>
+      <p id="parrafo-estado"></p>
+    </section>
+
+    <!-- Panel de control asíncrono y mensajes de estado -->
+    <section id="panel-control">
+      <button type="button" id="boton-actualizar">Actualizar</button>
+      <button type="button" id="boton-forzar-error">Forzar error</button>
+      <p id="estado"></p>
+    </section>
+
     <form id="form-publicacion">
-      <input id="titulo" name="titulo" placeholder="Título" required />
+      <div>
+        <input id="titulo" name="titulo" placeholder="Título" required />
+        <small id="error-titulo" class="mensaje-error"></small>
+      </div>
+
       <textarea
         id="descripcion"
         name="descripcion"
         placeholder="Descripción"
       ></textarea>
-      <input id="autor" name="autor" placeholder="Nombre del autor" required />
+
+      <div>
+        <input
+          id="autor"
+          name="autor"
+          placeholder="Nombre del autor"
+          required
+        />
+        <small id="error-autor" class="mensaje-error"></small>
+      </div>
 
       <div>
         <input
@@ -33,7 +65,7 @@
 
       <div id="campos-especificos"></div>
 
-      <button type="submit" id="botonPublicar">Publicar</button>
+      <button type="submit" id="boton-publicar" disabled>Publicar</button>
     </form>
 
     <h3>Vista Previa</h3>
@@ -42,6 +74,6 @@
     <h3>Publicaciones</h3>
     <section id="lista-publicaciones"></section>
 
-    <script type="module" src="/js/Main.js"></script>
+    <script type="module" src="/js/main.js"></script>
   </body>
 </html>
