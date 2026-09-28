@@ -4,7 +4,7 @@ import PublicacionServicio from "./PublicacionServicio.js";
 import { validarPublicacion } from "./validaciones.js";
 
 // Heredamos de EventTarget (Nativo del navegador, no requiere imports, no rompe chrome)
-export default class RepositorioPublicaciones extends EventTarget {
+export class RepositorioPublicaciones extends EventTarget {
   constructor() {
     super();
     this.publicaciones = [];
@@ -72,6 +72,27 @@ export default class RepositorioPublicaciones extends EventTarget {
     );
   }
 
+  buscarPorEtiqueta(etiqueta) {
+    return this.publicaciones.filter(
+      (publicacion) =>
+        publicacion.activa && publicacion.tieneEtiqueta(etiqueta),
+    );
+  }
+
+  obtenerEstado() {
+    const activas = this.publicaciones.filter((p) => p.activa).length;
+    return `Publicaciones activas: ${activas}`;
+  }
+
+  obtenerEstadoInactivas() {
+    const inactivas = this.publicaciones.filter((p) => !p.activa).length;
+    return `Publicaciones inactivas: ${inactivas}`;
+  }
+
+  pendientesDeRevision() {
+    return this.publicaciones.filter((p) => p.activa && p.requiereRevision());
+  }
+
   filtrarActivas() {
     return this.publicaciones.filter((publicacion) => publicacion.estaActiva());
   }
@@ -92,3 +113,5 @@ export default class RepositorioPublicaciones extends EventTarget {
     );
   }
 }
+
+export default RepositorioPublicaciones;

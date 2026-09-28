@@ -315,3 +315,37 @@ if (botonForzarError)
 // Carga inicial
 actualizarCamposEspecificos();
 actualizarVistaPrevia();
+
+//tp15
+const parrafoEstado = document.querySelector("#parrafo-estado");
+const botonConsultar = document.querySelector("#consultar");
+const botonConsultarInactivas = document.querySelector("#consultar-inactivas");
+
+botonConsultar.addEventListener("click", async () => {
+  parrafoEstado.textContent = "Consultando...";
+  try {
+    const respuesta = await fetch("/estado-comunidad");
+    if (!respuesta.ok) {
+      throw new Error("La respuesta no fue exitosa");
+    }
+    const texto = await respuesta.text();
+    parrafoEstado.textContent = texto;
+  } catch (error) {
+    parrafoEstado.textContent = `No se pudo consultar el estado: ${error.message}`;
+  }
+});
+
+// Ejercicio adicional
+botonConsultarInactivas.addEventListener("click", async () => {
+  parrafoEstado.textContent = "Consultando inactivas...";
+  try {
+    const respuesta = await fetch("/estado-inactivas");
+    if (!respuesta.ok) {
+      throw new Error("La respuesta no fue exitosa");
+    }
+    const texto = await respuesta.text();
+    parrafoEstado.textContent = texto;
+  } catch (error) {
+    parrafoEstado.textContent = `No se pudo consultar el estado: ${error.message}`;
+  }
+});

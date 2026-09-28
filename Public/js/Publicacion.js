@@ -1,27 +1,65 @@
-export default class Publicacion {
-  titulo;
-  descripcion;
-  autor;
-  fechaPublicacion;
-  activa;
+import { Reporte } from "./Reporte.js";
 
-  constructor(titulo, descripcion, autor) {
-    this.titulo = titulo;
-    this.descripcion = descripcion;
-    this.autor = autor;
-    this.fechaPublicacion = new Date();
-    this.activa = true;
-    this.destacada = false;
+export class Publicacion {
+  constructor(autor, titulo, contenido) {
     this.id = Date.now();
+    this.autor = autor;
+    this.titulo = titulo;
+    this.contenido = contenido;
+    this.activa = true;
+    this.destacada = false; // Propiedad inicializada
+    this.etiquetas = [];
+    this.reportes = [];
+    this.estado = "pendiente";
   }
 
-  get resumen() {
-    const estadoTexto = this.estaActiva() ? "Activa" : "Inactiva";
-    return `${this.titulo} — ${this.autor.nombre} (${estadoTexto})`;
+  reportar(usuario, motivo) {
+    const yaReporto = this.reportes.some((r) => r.usuario === usuario);
+    if (yaReporto) {
+      throw new Error("El usuario ya reportó esta publicación");
+    }
+    this.reportes.push(new Reporte(usuario, motivo));
+  }
+
+  requiereRevision() {
+    return this.reportes.length >= 3;
+  }
+
+  async revisar(servicioModeracion) {
+    const decision = await servicioModeracion.evaluar(this);
+    if (decision === "aprobado") {
+      this.estado = "aprobada";
+    } else if (decision === "rechazado") {
+      this.estado = "rechazada";
+    } else {
+      throw new Error("Decisión de moderación inválida");
+    }
+    return this.estado;
+  }
+
+  agregarEtiqueta(etiqueta) {
+    const normalizada = etiqueta.trim();
+    if (!normalizada) {
+      throw new Error("Etiqueta inválida");
+    }
+    const yaExiste = this.tieneEtiqueta(normalizada);
+    if (!yaExiste) {
+      this.etiquetas.push(normalizada);
+    }
+  }
+
+  tieneEtiqueta(etiqueta) {
+    const buscada = etiqueta.trim().toLowerCase();
+    return this.etiquetas.some((e) => e.toLowerCase() === buscada);
   }
 
   mostrarResumen() {
-    return `${this.titulo} - ${this.autor.nombre}`;
+    // Tolera tanto si autor es un objeto Usuario como un String plano
+    const nombreAutor =
+      typeof this.autor === "object" && this.autor !== null
+        ? this.autor.nombre || this.autor
+        : this.autor;
+    return `${this.titulo} - ${nombreAutor}`;
   }
 
   estaActiva() {
@@ -29,7 +67,11 @@ export default class Publicacion {
   }
 
   esDeAutor(nombre) {
-    return this.autor.nombre === nombre;
+    const nombreAutor =
+      typeof this.autor === "object" && this.autor !== null
+        ? this.autor.nombre
+        : this.autor;
+    return nombreAutor === nombre;
   }
 
   destacar() {
@@ -40,12 +82,10 @@ export default class Publicacion {
     this.destacada = false;
   }
 
-  diasPublicada() {
-    const ms = new Date() - this.fechaPublicacion;
-    return Math.floor(ms / (1000 * 60 * 60 * 24));
-  }
-
   darDeBaja() {
     this.activa = false;
   }
 }
+
+// Exportación por defecto adicional para máxima compatibilidad con la suite de tests
+export default Publicacion;
