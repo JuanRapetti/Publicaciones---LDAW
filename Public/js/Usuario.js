@@ -1,4 +1,4 @@
-export default class usuario {
+export default class Usuario {
   //atts
   nombre;
   email;

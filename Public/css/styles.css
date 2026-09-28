@@ -209,3 +209,8 @@ article button:hover {
     width: 100%;
   }
 }
+
+#salida[data-tipo="exito"] { background: #e6f4ea; border: 1px solid #2e7d32; }
+#salida[data-tipo="error"] { background: #fdecea; border: 1px solid #b3261e; }
+#salida { padding: 0.5rem 0.75rem; border-radius: 4px; }
+#salida:empty { display: none; }

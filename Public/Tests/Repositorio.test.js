@@ -4,6 +4,8 @@ import PublicacionVenta from "../js/PublicacionVenta.js";
 import PublicacionServicio from "../js/PublicacionServicio.js";
 import Usuario from "../js/Usuario.js";
 
+const CONTENIDO = "Contenido válido de más de veinte caracteres.";
+
 describe("RepositorioPublicaciones", () => {
   let repositorio;
   let usuario;
@@ -14,7 +16,7 @@ describe("RepositorioPublicaciones", () => {
   });
 
   test("buscarPorEtiqueta devuelve coincidencias activas", () => {
-    const publicacion = new Publicacion("Apuntes de Redes", "...", usuario);
+    const publicacion = new Publicacion(usuario, "Apuntes de Redes", CONTENIDO);
     publicacion.agregarEtiqueta("redes");
     repositorio.agregar(publicacion);
 
@@ -22,7 +24,7 @@ describe("RepositorioPublicaciones", () => {
   });
 
   test("una publicación dada de baja queda excluida", () => {
-    const publicacion = new Publicacion("Apuntes de Redes", "...", usuario);
+    const publicacion = new Publicacion(usuario, "Apuntes de Redes", CONTENIDO);
     publicacion.agregarEtiqueta("redes");
     publicacion.darDeBaja();
     repositorio.agregar(publicacion);
@@ -35,10 +37,11 @@ describe("RepositorioPublicaciones", () => {
   });
 
   test("cada subclase arma su propio resumen", () => {
-    const venta = new PublicacionVenta("Calculadora", "...", usuario, 5000);
+    // Las subclases mantienen su firma: (titulo, descripcion, autor, ...)
+    const venta = new PublicacionVenta("Calculadora", CONTENIDO, usuario, 5000);
     const servicio = new PublicacionServicio(
       "Clases de Algebra",
-      "...",
+      CONTENIDO,
       usuario,
       "virtual",
       60,

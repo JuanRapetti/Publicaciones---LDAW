@@ -2,7 +2,7 @@ import Publicacion from "./Publicacion.js";
 
 export default class PublicacionServicio extends Publicacion {
   constructor(titulo, descripcion, autor, modalidad, duracion) {
-    super(titulo, descripcion, autor);
+    super(autor, titulo, descripcion);
 
     this.modalidad = modalidad;
     this.duracion = duracion;
