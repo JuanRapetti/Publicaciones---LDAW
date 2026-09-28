@@ -2,6 +2,7 @@ import Usuario from "./Usuario.js";
 import PublicacionVenta from "./PublicacionVenta.js";
 import PublicacionServicio from "./PublicacionServicio.js";
 import { validarPublicacion } from "./validaciones.js";
+import Publicacion from "./Publicacion.js"; 
 
 // Heredamos de EventTarget (Nativo del navegador, no requiere imports, no rompe chrome)
 export class RepositorioPublicaciones extends EventTarget {
@@ -29,24 +30,28 @@ export class RepositorioPublicaciones extends EventTarget {
 
   cargarDesde(datos) {
     this.publicaciones = datos.map((item) => {
-      const usuario = new Usuario(item.autor.nombre, item.autor.email);
-      let pub;
+      // El servidor serializa la publicación tal cual: el autor puede venir como
+      // String u objeto, y el texto como "contenido" (o "descripcion" en datos viejos).
+      const autorEsObjeto = typeof item.autor === "object" && item.autor !== null;
+      const nombreAutor = autorEsObjeto ? item.autor.nombre : item.autor;
+      const emailAutor = autorEsObjeto ? item.autor.email : "";
+      const usuario = new Usuario(nombreAutor, emailAutor);
+      const descripcion = item.descripcion ?? item.contenido;
 
+      let pub;
       if (item.tipo === "venta") {
-        pub = new PublicacionVenta(
-          item.titulo,
-          item.descripcion,
-          usuario,
-          item.precio,
-        );
-      } else {
+        pub = new PublicacionVenta(item.titulo, descripcion, usuario, item.precio);
+      } else if (item.tipo === "servicio") {
         pub = new PublicacionServicio(
           item.titulo,
-          item.descripcion,
+          descripcion,
           usuario,
           item.modalidad,
           item.duracion,
         );
+      } else {
+        // Publicaciones creadas por POST /publicaciones (clase base)
+        pub = new Publicacion(usuario, item.titulo, descripcion, item.categoria ?? "general");
       }
 
       pub.id = item.id || Date.now();

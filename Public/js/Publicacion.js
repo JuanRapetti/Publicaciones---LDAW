@@ -1,17 +1,46 @@
 import { Reporte } from "./Reporte.js";
 
+export const CATEGORIAS_PERMITIDAS = ["general", "aviso", "evento", "compraventa"];
+
 export class Publicacion {
-  constructor(autor, titulo, contenido) {
+  constructor(autor, titulo, contenido, categoria = "general") {
+    
+    // El autor puede ser un String o un objeto Usuario (como en PublicacionVenta/Servicio)
+    const autorEsObjeto = typeof autor === "object" && autor !== null;
+    const nombreAutor = autorEsObjeto ? autor.nombre : autor;
+    const autorNormalizado = typeof nombreAutor === "string" ? nombreAutor.trim() : "";
+    const tituloNormalizado = typeof titulo === "string" ? titulo.trim() : "";
+    const contenidoNormalizado = typeof contenido === "string" ? contenido.trim() : "";
+
+    // 2) VALIDAR
+    if (!autorNormalizado) {
+      throw new Error("El autor es obligatorio");
+    }
+    if (tituloNormalizado.length < 5 || tituloNormalizado.length > 80) {
+      throw new Error("El título debe tener entre 5 y 80 caracteres");
+    }
+    if (contenidoNormalizado.length < 20 || contenidoNormalizado.length > 500) {
+      throw new Error("La descripcion debe tener entre 20 y 500 caracteres");
+    }
+    if (!CATEGORIAS_PERMITIDAS.includes(categoria)) {
+      throw new Error(
+        `La categoría debe ser una de: ${CATEGORIAS_PERMITIDAS.join(", ")}`,
+      );
+    }
+
+    // 3) ASIGNAR
     this.id = Date.now();
-    this.autor = autor;
-    this.titulo = titulo;
-    this.contenido = contenido;
+    this.autor = autorEsObjeto ? autor : autorNormalizado; // el Usuario se conserva tal cual
+    this.titulo = tituloNormalizado;
+    this.contenido = contenidoNormalizado;
+    this.categoria = categoria;
     this.activa = true;
-    this.destacada = false; // Propiedad inicializada
+    this.destacada = false;
     this.etiquetas = [];
     this.reportes = [];
     this.estado = "pendiente";
   }
+
 
   reportar(usuario, motivo) {
     const yaReporto = this.reportes.some((r) => r.usuario === usuario);

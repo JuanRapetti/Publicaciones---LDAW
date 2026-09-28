@@ -24,49 +24,26 @@
       <button type="button" id="boton-forzar-error">Forzar error</button>
       <p id="estado"></p>
     </section>
-
-    <form id="form-publicacion">
-      <div>
-        <input id="titulo" name="titulo" placeholder="Título" required />
-        <small id="error-titulo" class="mensaje-error"></small>
-      </div>
-
-      <textarea
-        id="descripcion"
-        name="descripcion"
-        placeholder="Descripción"
-      ></textarea>
-
-      <div>
-        <input
-          id="autor"
-          name="autor"
-          placeholder="Nombre del autor"
-          required
-        />
-        <small id="error-autor" class="mensaje-error"></small>
-      </div>
-
-      <div>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="Email"
-          required
-        />
-        <small id="ayuda-email"></small>
-      </div>
-
-      <select id="tipo" name="tipo">
-        <option value="venta">Venta</option>
-        <option value="servicio">Servicio</option>
-      </select>
-
-      <div id="campos-especificos"></div>
-
-      <button type="submit" id="boton-publicar" disabled>Publicar</button>
+        <h2>Nueva publicación (envío al servidor)</h2>
+    <form id="pedido" action="/publicaciones" method="post">
+      <label>Autor <input name="autor" required /></label>
+      <label>Título
+        <input name="titulo" minlength="5" maxlength="80" required />
+      </label>
+      <label>Descripcion
+        <textarea name="descripcion" minlength="20" maxlength="500" required></textarea>
+      </label>
+      <label>Categoría
+        <select name="categoria" required>
+          <option value="general">General</option>
+          <option value="aviso">Aviso</option>
+          <option value="evento">Evento</option>
+          <option value="compraventa">Compra-venta</option>
+        </select>
+      </label>
+      <button>Publicar</button>
     </form>
+    <p id="salida"></p>
 
     <h3>Vista Previa</h3>
     <output id="vista-previa"></output>

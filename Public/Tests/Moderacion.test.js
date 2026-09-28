@@ -1,20 +1,22 @@
 import { Publicacion } from "../js/Publicacion.js";
 import { RepositorioPublicaciones } from "../js/RepositorioPublicaciones.js";
 
+const CONTENIDO = "Contenido válido de más de veinte caracteres.";
+
 describe("Publicacion reportes", () => {
   test("una publicación nueva no requiere revisión", () => {
-    const publicacion = new Publicacion("Ana", "Apuntes de Redes", "...");
+    const publicacion = new Publicacion("Ana", "Apuntes de Redes", CONTENIDO);
     expect(publicacion.requiereRevision()).toBe(false);
   });
 
   test("con un solo reporte no alcanza el límite", () => {
-    const publicacion = new Publicacion("Ana", "Apuntes de Redes", "...");
+    const publicacion = new Publicacion("Ana", "Apuntes de Redes", CONTENIDO);
     publicacion.reportar("bruno", "Contenido repetido");
     expect(publicacion.requiereRevision()).toBe(false);
   });
 
   test("un usuario no puede reportar dos veces la misma publicación", () => {
-    const publicacion = new Publicacion("Ana", "Apuntes de Redes", "...");
+    const publicacion = new Publicacion("Ana", "Apuntes de Redes", CONTENIDO);
     publicacion.reportar("bruno", "Contenido repetido");
     expect(() => publicacion.reportar("bruno", "Otro motivo")).toThrow(
       "El usuario ya reportó esta publicación",
@@ -22,7 +24,7 @@ describe("Publicacion reportes", () => {
   });
 
   test("con tres reportes de usuarios distintos requiere revisión", () => {
-    const publicacion = new Publicacion("Ana", "Apuntes de Redes", "...");
+    const publicacion = new Publicacion("Ana", "Apuntes de Redes", CONTENIDO);
     publicacion.reportar("bruno", "motivo 1");
     publicacion.reportar("carla", "motivo 2");
     publicacion.reportar("dario", "motivo 3");
@@ -33,7 +35,7 @@ describe("Publicacion reportes", () => {
 describe("RepositorioPublicaciones pendientesDeRevision", () => {
   test("devuelve sólo publicaciones activas que requieren revisión", () => {
     const repositorio = new RepositorioPublicaciones();
-    const publicacion = new Publicacion("Ana", "Apuntes de Redes", "...");
+    const publicacion = new Publicacion("Ana", "Apuntes de Redes", CONTENIDO);
     publicacion.reportar("bruno", "motivo 1");
     publicacion.reportar("carla", "motivo 2");
     publicacion.reportar("dario", "motivo 3");
@@ -43,7 +45,7 @@ describe("RepositorioPublicaciones pendientesDeRevision", () => {
 
   test("una publicación dada de baja queda excluida aunque requiera revisión", () => {
     const repositorio = new RepositorioPublicaciones();
-    const publicacion = new Publicacion("Ana", "Apuntes de Redes", "...");
+    const publicacion = new Publicacion("Ana", "Apuntes de Redes", CONTENIDO);
     publicacion.reportar("bruno", "motivo 1");
     publicacion.reportar("carla", "motivo 2");
     publicacion.reportar("dario", "motivo 3");
@@ -54,7 +56,7 @@ describe("RepositorioPublicaciones pendientesDeRevision", () => {
 
   test("sin reportes suficientes no hay publicaciones pendientes", () => {
     const repositorio = new RepositorioPublicaciones();
-    const publicacion = new Publicacion("Ana", "Apuntes de Redes", "...");
+    const publicacion = new Publicacion("Ana", "Apuntes de Redes", CONTENIDO);
     publicacion.reportar("bruno", "motivo 1");
     repositorio.agregar(publicacion);
     expect(repositorio.pendientesDeRevision()).toEqual([]);
