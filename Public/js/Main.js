@@ -17,6 +17,7 @@ const camposEspecificos = document.querySelector("#campos-especificos");
 const divVistaPrevia = document.querySelector("#vista-previa");
 const listaPublicaciones = document.querySelector("#lista-publicaciones");
 const ayudaEmail = document.querySelector("#ayuda-email");
+const salida = document.querySelector("#salida");
 
 // Estado, asincronía y errores
 const estado = document.querySelector("#estado");
@@ -234,23 +235,33 @@ async function manejarEnvio(evento) {
     return;
 
   botonEnviar.disabled = true;
-  estado.textContent = "Publicando...";
+  if (salida) salida.textContent = "Enviando al servidor...";
 
   try {
-    await esperar(800);
-    const publicacion = crearPublicacionDesdeFormulario();
-    const agregada = repositorio.agregar(publicacion);
+    const respuesta = await fetch(formPublicacion.action, {
+      method: formPublicacion.method,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(new FormData(formPublicacion)), // Envía todos los campos dinámicos y estáticos
+    });
 
-    if (agregada) {
-      renderizarPublicaciones();
-      estado.textContent = "Publicación agregada con éxito";
+    const texto = await respuesta.text();
+
+    if (salida) {
+      salida.textContent = texto;
+      salida.dataset.tipo = respuesta.ok ? "exito" : "error"; // Aplica estilo visual[cite: 12]
+    }
+
+    if (respuesta.ok) {
       formPublicacion.reset();
+      actualizarCamposEspecificos();
       actualizarVistaPrevia();
-    } else {
-      throw new Error("La publicación no superó las reglas del repositorio");
+      await cargarPublicaciones(false); // Refresca las publicaciones del servidor[cite: 2]
     }
   } catch (error) {
-    estado.textContent = `Error: ${error.message}`;
+    if (salida) {
+      salida.textContent = `Error de conexión: ${error.message}`;
+      salida.dataset.tipo = "error";
+    }
   } finally {
     actualizarEstadoFormulario();
   }

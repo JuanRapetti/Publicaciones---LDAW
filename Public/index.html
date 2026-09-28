@@ -9,6 +9,7 @@
   <body>
     <h1>Gestor de Publicaciones de la Comunidad</h1>
 
+    <!-- Panel de consulta de estado del servidor (TP 15) -->
     <section id="panel-estado">
       <h2>Estado de la Comunidad</h2>
       <button type="button" id="consultar">Consultar estado</button>
@@ -25,17 +26,30 @@
       <p id="estado"></p>
     </section>
 
-    <form id="form-publicacion">
+    <!-- Formulario de alta con action y method configurados (TP 16) -->
+    <form id="form-publicacion" action="/publicaciones" method="post">
       <div>
-        <input id="titulo" name="titulo" placeholder="Título" required />
+        <input
+          id="titulo"
+          name="titulo"
+          placeholder="Título"
+          minlength="5"
+          maxlength="80"
+          required
+        />
         <small id="error-titulo" class="mensaje-error"></small>
       </div>
 
-      <textarea
-        id="descripcion"
-        name="descripcion"
-        placeholder="Descripción"
-      ></textarea>
+      <div>
+        <textarea
+          id="descripcion"
+          name="descripcion"
+          placeholder="Descripción (mínimo 20 caracteres)"
+          minlength="20"
+          maxlength="500"
+          required
+        ></textarea>
+      </div>
 
       <div>
         <input
@@ -58,15 +72,33 @@
         <small id="ayuda-email"></small>
       </div>
 
-      <select id="tipo" name="tipo">
-        <option value="venta">Venta</option>
-        <option value="servicio">Servicio</option>
-      </select>
+      <div>
+        <label for="tipo">Tipo:</label>
+        <select id="tipo" name="tipo">
+          <option value="venta">Venta</option>
+          <option value="servicio">Servicio</option>
+        </select>
+      </div>
 
+      <!-- Campo de Categoría (TP 16) -->
+      <div>
+        <label for="categoria">Categoría:</label>
+        <select id="categoria" name="categoria" required>
+          <option value="general">General</option>
+          <option value="aviso">Aviso</option>
+          <option value="evento">Evento</option>
+          <option value="compraventa">Compra-venta</option>
+        </select>
+      </div>
+
+      <!-- Contenedor dinámico (Venta vs Servicio) -->
       <div id="campos-especificos"></div>
 
       <button type="submit" id="boton-publicar" disabled>Publicar</button>
     </form>
+
+    <!-- Párrafo para mensaje de respuesta del servidor (TP 16) -->
+    <p id="salida"></p>
 
     <h3>Vista Previa</h3>
     <output id="vista-previa"></output>

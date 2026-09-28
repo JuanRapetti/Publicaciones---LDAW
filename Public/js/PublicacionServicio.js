@@ -1,15 +1,24 @@
 import Publicacion from "./Publicacion.js";
 
-export default class PublicacionServicio extends Publicacion {
-  constructor(titulo, descripcion, autor, modalidad, duracion) {
-    super(titulo, descripcion, autor);
+export class PublicacionServicio extends Publicacion {
+  constructor(
+    titulo,
+    descripcion,
+    autor,
+    modalidad,
+    duracion,
+    categoria = "general",
+  ) {
+    super(autor, titulo, descripcion, categoria);
 
     this.modalidad = modalidad;
-    this.duracion = duracion;
+    this.duracion = Number(duracion);
     this.cliente = null;
   }
 
   mostrarResumen() {
-    return `${super.mostrarResumen()} - Modalidad: ${this.modalidad} - Duración: ${this.duracion}`;
+    return `${super.mostrarResumen()} - Modalidad: ${this.modalidad} - Duración: ${this.duracion} min`;
   }
 }
+
+export default PublicacionServicio;

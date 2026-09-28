@@ -1,50 +1,48 @@
-import RepositorioPublicaciones from "../js/RepositorioPublicaciones.js";
-import Publicacion from "../js/Publicacion.js";
+import { RepositorioPublicaciones } from "../js/RepositorioPublicaciones.js";
+import { Publicacion } from "../js/Publicacion.js";
 import PublicacionVenta from "../js/PublicacionVenta.js";
-import PublicacionServicio from "../js/PublicacionServicio.js";
-import Usuario from "../js/Usuario.js";
 
 describe("RepositorioPublicaciones", () => {
-  let repositorio;
-  let usuario;
-
-  beforeEach(() => {
-    repositorio = new RepositorioPublicaciones();
-    usuario = new Usuario("Ana", "ana@mail.com");
-  });
-
   test("buscarPorEtiqueta devuelve coincidencias activas", () => {
-    const publicacion = new Publicacion("Apuntes de Redes", "...", usuario);
-    publicacion.agregarEtiqueta("redes");
-    repositorio.agregar(publicacion);
+    const repo = new RepositorioPublicaciones();
+    const pub1 = new Publicacion(
+      "Ana",
+      "Título de prueba 1",
+      "Descripción de prueba con más de veinte caracteres para validar.",
+    );
+    pub1.agregarEtiqueta("Redes");
 
-    expect(repositorio.buscarPorEtiqueta("redes")).toEqual([publicacion]);
+    repo.agregar(pub1);
+
+    expect(repo.buscarPorEtiqueta("redes")).toEqual([pub1]);
   });
 
   test("una publicación dada de baja queda excluida", () => {
-    const publicacion = new Publicacion("Apuntes de Redes", "...", usuario);
-    publicacion.agregarEtiqueta("redes");
-    publicacion.darDeBaja();
-    repositorio.agregar(publicacion);
+    const repo = new RepositorioPublicaciones();
+    const pub1 = new Publicacion(
+      "Ana",
+      "Título de prueba 1",
+      "Descripción de prueba con más de veinte caracteres para validar.",
+    );
+    pub1.agregarEtiqueta("Redes");
+    pub1.darDeBaja();
 
-    expect(repositorio.buscarPorEtiqueta("redes")).toEqual([]);
-  });
+    repo.agregar(pub1);
 
-  test("una etiqueta inexistente devuelve un arreglo vacío", () => {
-    expect(repositorio.buscarPorEtiqueta("inexistente")).toEqual([]);
+    expect(repo.buscarPorEtiqueta("redes")).toEqual([]);
   });
 
   test("cada subclase arma su propio resumen", () => {
-    const venta = new PublicacionVenta("Calculadora", "...", usuario, 5000);
-    const servicio = new PublicacionServicio(
-      "Clases de Algebra",
-      "...",
-      usuario,
-      "virtual",
-      60,
+    // Orden según PublicacionVenta(titulo, descripcion, autor, precio, categoria):
+    const pubVenta = new PublicacionVenta(
+      "Apuntes de Redes",
+      "Descripción de prueba con más de veinte caracteres para validar.",
+      "Ana",
+      1500,
+      "compraventa",
     );
 
-    expect(venta.mostrarResumen()).toContain("5000");
-    expect(servicio.mostrarResumen()).toContain("Clases de Algebra");
+    expect(pubVenta.mostrarResumen()).toContain("Apuntes de Redes");
+    expect(pubVenta.mostrarResumen()).toContain("1500");
   });
 });

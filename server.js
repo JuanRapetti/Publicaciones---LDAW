@@ -14,18 +14,27 @@ const PORT = 3000;
 const repositorio = new RepositorioPublicaciones();
 
 // Precarga de datos ficticios de prueba
-const pub1 = new Publicacion("Ana", "Apuntes de Redes", "Excelente estado");
-const pub2 = new Publicacion("Bruno", "Calculadora Casio", "Funciona bien");
-const pub3 = new Publicacion("Carla", "Clases de Álgebra", "Modalidad virtual");
-pub3.darDeBaja(); // Desactivada para probar filtrado
+const pub1 = new Publicacion(
+  "Ana",
+  "Apuntes de Redes",
+  "Excelente estado, completos con todos los prácticos de la materia.",
+  "general",
+);
+
+const pub2 = new Publicacion(
+  "Bruno",
+  "Calculadora Casio",
+  "Funciona perfectamente, incluye pila nueva y manual original.",
+  "compraventa",
+);
 
 repositorio.agregar(pub1);
 repositorio.agregar(pub2);
-repositorio.agregar(pub3);
 
 // 1. Servir archivos estáticos del cliente usando ruta absoluta
-app.use(express.static(path.join(__dirname, "Public")));
+app.use(express.urlencoded({ extended: false })); // Permite procesar req.body desde URLSearchParams
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "Public")));
 
 // ==========================================
 // RUTAS DE LA API (Fix para el error 404)
@@ -119,4 +128,47 @@ app.get("/api/publicaciones", (req, res) => {
 
     res.json(publicaciones);
   }, 500);
+});
+
+app.post("/publicaciones", (req, res) => {
+  try {
+    const {
+      autor,
+      email,
+      titulo,
+      descripcion,
+      tipo,
+      categoria,
+      precio,
+      modalidad,
+      duracion,
+    } = req.body;
+
+    const usuario = new Usuario(autor, email);
+    let publicacion;
+
+    if (tipo === "venta") {
+      publicacion = new PublicacionVenta(
+        titulo,
+        descripcion,
+        usuario,
+        Number(precio),
+        categoria,
+      );
+    } else {
+      publicacion = new PublicacionServicio(
+        titulo,
+        descripcion,
+        usuario,
+        modalidad,
+        Number(duracion),
+        categoria,
+      );
+    }
+
+    repositorio.agregar(publicacion);
+    res.status(201).send(publicacion.mostrarResumen()); // 201 Creado
+  } catch (error) {
+    res.status(400).send(error.message); // 400 Error de validación del dominio
+  }
 });

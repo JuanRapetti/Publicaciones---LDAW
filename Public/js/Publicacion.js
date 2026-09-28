@@ -1,13 +1,50 @@
 import { Reporte } from "./Reporte.js";
 
+export const CATEGORIAS_PERMITIDAS = [
+  "general",
+  "aviso",
+  "evento",
+  "compraventa",
+];
+
 export class Publicacion {
-  constructor(autor, titulo, contenido) {
+  constructor(autor, titulo, descripcion, categoria = "general") {
+    const nombreAutorStr =
+      typeof autor === "object" && autor !== null ? autor.nombre : autor;
+
+    if (!nombreAutorStr || !nombreAutorStr.trim()) {
+      throw new Error("El autor es obligatorio");
+    }
+
+    const tituloNormalizado = titulo?.trim() ?? "";
+    if (tituloNormalizado.length < 5 || tituloNormalizado.length > 80) {
+      throw new Error("El título debe tener entre 5 y 80 caracteres");
+    }
+
+    const descripcionNormalizado = descripcion?.trim() ?? "";
+    if (
+      descripcionNormalizado.length < 20 ||
+      descripcionNormalizado.length > 500
+    ) {
+      throw new Error("La descripcion debe tener entre 20 y 500 caracteres");
+    }
+
+    if (!CATEGORIAS_PERMITIDAS.includes(categoria)) {
+      throw new Error(
+        `La categoría debe ser una de: ${CATEGORIAS_PERMITIDAS.join(", ")}`,
+      );
+    }
+
     this.id = Date.now();
-    this.autor = autor;
-    this.titulo = titulo;
-    this.contenido = contenido;
+    this.autor =
+      typeof autor === "object" && autor !== null ? autor : autor.trim();
+    this.titulo = tituloNormalizado;
+    this.descripcion = descripcionNormalizado;
+    this.contenido = descripcionNormalizado;
+    this.categoria = categoria;
+
     this.activa = true;
-    this.destacada = false; // Propiedad inicializada
+    this.destacada = false;
     this.etiquetas = [];
     this.reportes = [];
     this.estado = "pendiente";
@@ -54,12 +91,11 @@ export class Publicacion {
   }
 
   mostrarResumen() {
-    // Tolera tanto si autor es un objeto Usuario como un String plano
     const nombreAutor =
       typeof this.autor === "object" && this.autor !== null
         ? this.autor.nombre || this.autor
         : this.autor;
-    return `${this.titulo} - ${nombreAutor}`;
+    return `${this.titulo} - ${nombreAutor} (${this.categoria})`;
   }
 
   estaActiva() {
@@ -87,5 +123,4 @@ export class Publicacion {
   }
 }
 
-// Exportación por defecto adicional para máxima compatibilidad con la suite de tests
 export default Publicacion;
