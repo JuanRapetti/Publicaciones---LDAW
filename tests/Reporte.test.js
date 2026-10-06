@@ -1,4 +1,4 @@
-import { Reporte } from "../js/Reporte.js";
+import { Reporte } from "../src/Reporte.js";
 
 describe("Reporte", () => {
   test("crea un reporte con usuario, motivo y fecha", () => {

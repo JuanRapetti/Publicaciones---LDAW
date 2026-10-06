@@ -1,13 +1,13 @@
 import { Reporte } from "./Reporte.js";
 
 export class Publicacion {
-  constructor(autor, titulo, contenido) {
-    this.id = Date.now();
+  constructor(id, autor, titulo, contenido) {
+    this.id = id;
     this.autor = autor;
     this.titulo = titulo;
     this.contenido = contenido;
     this.activa = true;
-    this.destacada = false; // Propiedad inicializada
+    this.destacada = false;
     this.etiquetas = [];
     this.reportes = [];
     this.estado = "pendiente";
@@ -54,12 +54,11 @@ export class Publicacion {
   }
 
   mostrarResumen() {
-    // Tolera tanto si autor es un objeto Usuario como un String plano
     const nombreAutor =
       typeof this.autor === "object" && this.autor !== null
         ? this.autor.nombre || this.autor
         : this.autor;
-    return `${this.titulo} - ${nombreAutor}`;
+    return `${this.titulo}\n${nombreAutor}`;
   }
 
   estaActiva() {
@@ -87,5 +86,4 @@ export class Publicacion {
   }
 }
 
-// Exportación por defecto adicional para máxima compatibilidad con la suite de tests
 export default Publicacion;
