@@ -8,21 +8,21 @@ export default function crearRouterPublicaciones(repositorio) {
     res.json(repositorio.listar());
   });
 
-  // PASO 5B: POST /publicaciones
-  router.post("/", (req, res) => {
+  // PASO 5B: POST /publicaciones (async por guardar en disco)
+  router.post("/", async (req, res) => {
     try {
       const { autor, titulo, contenido } = req.body;
-      const nueva = repositorio.agregar(autor, titulo, contenido);
+      const nueva = await repositorio.agregar(autor, titulo, contenido);
       res.status(201).json(nueva);
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
   });
 
-  // Ejercicio adicional: PUT /publicaciones/:id
-  router.put("/:id", (req, res) => {
+  // Ejercicio adicional: PUT /publicaciones/:id (async)
+  router.put("/:id", async (req, res) => {
     try {
-      const actualizada = repositorio.actualizar(req.params.id, req.body);
+      const actualizada = await repositorio.actualizar(req.params.id, req.body);
       res.json(actualizada);
     } catch (error) {
       if (error.message === "Publicación inexistente") {
@@ -32,9 +32,9 @@ export default function crearRouterPublicaciones(repositorio) {
     }
   });
 
-  // Ejercicio adicional: DELETE /publicaciones/:id
-  router.delete("/:id", (req, res) => {
-    const eliminado = repositorio.eliminar(req.params.id);
+  // Ejercicio adicional: DELETE /publicaciones/:id (async)
+  router.delete("/:id", async (req, res) => {
+    const eliminado = await repositorio.eliminar(req.params.id);
     if (!eliminado) {
       return res.status(404).json({ error: "Publicación inexistente" });
     }

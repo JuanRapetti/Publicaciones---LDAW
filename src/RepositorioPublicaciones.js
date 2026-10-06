@@ -1,3 +1,4 @@
+import { readFile, writeFile } from "node:fs/promises";
 import Usuario from "./Usuario.js";
 import Publicacion from "./Publicacion.js";
 import PublicacionVenta from "./PublicacionVenta.js";
@@ -5,24 +6,70 @@ import PublicacionServicio from "./PublicacionServicio.js";
 import { validarPublicacion } from "./validaciones.js";
 
 export class RepositorioPublicaciones extends EventTarget {
-  constructor() {
+  constructor(ruta = null) {
     super();
+    this.ruta = ruta;
     this.publicaciones = [];
     this.proximoId = 1;
   }
 
-  // Operación CRUD: Crear / Agregar
-  agregar(autor, titulo, contenido, reglas = null) {
+  // PASO 7A y 7B: Cargar desde archivo de persistencia
+  async cargar() {
+    if (!this.ruta) return;
+
+    try {
+      const contenido = await readFile(this.ruta, "utf8");
+      const datos = JSON.parse(contenido);
+
+      this.publicaciones = datos.map((item) => {
+        const pub = new Publicacion(
+          item.id,
+          item.autor,
+          item.titulo,
+          item.contenido,
+        );
+        pub.activa = item.activa ?? true;
+        pub.destacada = item.destacada ?? false;
+        pub.etiquetas = item.etiquetas ?? [];
+        pub.reportes = item.reportes ?? [];
+        pub.estado = item.estado ?? "pendiente";
+        return pub;
+      });
+
+      const maxId = this.publicaciones.reduce(
+        (max, p) => (p.id > max ? p.id : max),
+        0,
+      );
+      this.proximoId = maxId + 1;
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        await this.guardar();
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  // PASO 8A: Guardar cambios en el archivo de disco
+  async guardar() {
+    if (!this.ruta) return;
+    await writeFile(
+      this.ruta,
+      JSON.stringify(this.publicaciones, null, 2),
+      "utf8",
+    );
+  }
+
+  // Operación CRUD: Crear / Agregar (ahora es async)
+  async agregar(autor, titulo, contenido, reglas = null) {
     let nuevaPub;
 
-    // Si le pasan una instancia ya construida de Publicacion
     if (autor instanceof Publicacion) {
       nuevaPub = autor;
       if (!nuevaPub.id) {
         nuevaPub.id = this.proximoId++;
       }
     } else {
-      // Si le pasan argumentos sueltos (autor, titulo, contenido)
       if (reglas && !validarPublicacion({ autor, titulo, contenido }, reglas)) {
         return false;
       }
@@ -30,6 +77,7 @@ export class RepositorioPublicaciones extends EventTarget {
     }
 
     this.publicaciones.push(nuevaPub);
+    await this.guardar();
 
     this.dispatchEvent(
       new CustomEvent("publicacionAgregada", { detail: nuevaPub }),
@@ -38,7 +86,7 @@ export class RepositorioPublicaciones extends EventTarget {
     return nuevaPub;
   }
 
-  // Operación CRUD: Listar (devuelve copia)
+  // Operación CRUD: Listar
   listar() {
     return [...this.publicaciones];
   }
@@ -47,14 +95,14 @@ export class RepositorioPublicaciones extends EventTarget {
     return this.listar();
   }
 
-  // Operación CRUD: Buscar por ID (soporta string o number)
+  // Operación CRUD: Buscar por ID
   buscarPorId(id) {
     const idNumerico = Number(id);
     return this.publicaciones.find((p) => p.id === idNumerico) || null;
   }
 
-  // Operación CRUD: Actualizar
-  actualizar(id, cambios = {}) {
+  // Operación CRUD: Actualizar (ahora es async)
+  async actualizar(id, cambios = {}) {
     const anterior = this.buscarPorId(id);
     if (!anterior) {
       throw new Error("Publicación inexistente");
@@ -67,7 +115,6 @@ export class RepositorioPublicaciones extends EventTarget {
       cambios.contenido ?? anterior.contenido,
     );
 
-    // Conservar estados y reportes acumulados
     actualizada.activa = anterior.activa;
     actualizada.destacada = anterior.destacada;
     actualizada.etiquetas = [...anterior.etiquetas];
@@ -77,21 +124,24 @@ export class RepositorioPublicaciones extends EventTarget {
     const indice = this.publicaciones.indexOf(anterior);
     this.publicaciones[indice] = actualizada;
 
+    await this.guardar();
+
     return actualizada;
   }
 
-  // Operación CRUD: Eliminar
-  eliminar(id) {
+  // Operación CRUD: Eliminar (ahora es async)
+  async eliminar(id) {
     const publicacion = this.buscarPorId(id);
     if (!publicacion) return false;
 
     const indice = this.publicaciones.indexOf(publicacion);
     this.publicaciones.splice(indice, 1);
+    await this.guardar();
     return true;
   }
 
   // ==========================================
-  // MÉTODOS DEL DOMINIO (Requeridos por los tests)
+  // MÉTODOS DEL DOMINIO
   // ==========================================
 
   pendientesDeRevision() {

@@ -45,6 +45,14 @@ function observarEvento(evento) {
   });
 }
 
+function mostrarDiagnostico(publicaciones) {
+  const contenedor = document.querySelector("#diagnostico-lista");
+  if (!contenedor) return;
+  contenedor.innerHTML = publicaciones
+    .map((p) => `<li>${p.titulo} (${p.autor})</li>`)
+    .join("");
+}
+
 // ==========================================
 // 3. VALIDACIONES Y FORMULARIO REACTIVO
 // ==========================================
@@ -239,7 +247,7 @@ async function manejarEnvio(evento) {
   try {
     await esperar(800);
     const publicacion = crearPublicacionDesdeFormulario();
-    const agregada = repositorio.agregar(publicacion);
+    const agregada = await repositorio.agregar(publicacion);
 
     if (agregada) {
       renderizarPublicaciones();
@@ -312,40 +320,65 @@ if (botonActualizar)
 if (botonForzarError)
   botonForzarError.addEventListener("click", () => cargarPublicaciones(true));
 
+// PASO 5A y 5B: Diagnóstico JSON y XML en Cliente
+document.querySelector("#ver-json")?.addEventListener("click", async () => {
+  const texto = await fetch("/datos/publicaciones.json").then((r) => r.text());
+  const publicaciones = JSON.parse(texto);
+  mostrarDiagnostico(publicaciones);
+});
+
+document.querySelector("#ver-xml")?.addEventListener("click", async () => {
+  const texto = await fetch("/datos/publicaciones.xml").then((r) => r.text());
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(texto, "application/xml");
+
+  const nodos = Array.from(xmlDoc.querySelectorAll("publicacion"));
+  const publicaciones = nodos.map((nodo) => ({
+    id: Number(nodo.getAttribute("id")),
+    autor: nodo.querySelector("autor")?.textContent ?? "",
+    titulo: nodo.querySelector("titulo")?.textContent ?? "",
+    contenido: nodo.querySelector("contenido")?.textContent ?? "",
+    activa: nodo.querySelector("activa")?.textContent === "true",
+    destacada: nodo.querySelector("destacada")?.textContent === "true",
+    estado: nodo.querySelector("estado")?.textContent ?? "",
+  }));
+
+  mostrarDiagnostico(publicaciones);
+});
+
 // Carga inicial
 actualizarCamposEspecificos();
 actualizarVistaPrevia();
 
-//tp15
+// tp15
 const parrafoEstado = document.querySelector("#parrafo-estado");
 const botonConsultar = document.querySelector("#consultar");
 const botonConsultarInactivas = document.querySelector("#consultar-inactivas");
 
-botonConsultar.addEventListener("click", async () => {
-  parrafoEstado.textContent = "Consultando...";
-  try {
-    const respuesta = await fetch("/estado-comunidad");
-    if (!respuesta.ok) {
-      throw new Error("La respuesta no fue exitosa");
+if (botonConsultar) {
+  botonConsultar.addEventListener("click", async () => {
+    parrafoEstado.textContent = "Consultando...";
+    try {
+      const respuesta = await fetch("/estado-comunidad");
+      if (!respuesta.ok) throw new Error("La respuesta no fue exitosa");
+      const texto = await respuesta.text();
+      parrafoEstado.textContent = texto;
+    } catch (error) {
+      parrafoEstado.textContent = `No se pudo consultar el estado: ${error.message}`;
     }
-    const texto = await respuesta.text();
-    parrafoEstado.textContent = texto;
-  } catch (error) {
-    parrafoEstado.textContent = `No se pudo consultar el estado: ${error.message}`;
-  }
-});
+  });
+}
 
-// Ejercicio adicional
-botonConsultarInactivas.addEventListener("click", async () => {
-  parrafoEstado.textContent = "Consultando inactivas...";
-  try {
-    const respuesta = await fetch("/estado-inactivas");
-    if (!respuesta.ok) {
-      throw new Error("La respuesta no fue exitosa");
+if (botonConsultarInactivas) {
+  botonConsultarInactivas.addEventListener("click", async () => {
+    parrafoEstado.textContent = "Consultando inactivas...";
+    try {
+      const respuesta = await fetch("/estado-inactivas");
+      if (!respuesta.ok) throw new Error("La respuesta no fue exitosa");
+      const texto = await respuesta.text();
+      parrafoEstado.textContent = texto;
+    } catch (error) {
+      parrafoEstado.textContent = `No se pudo consultar el estado: ${error.message}`;
     }
-    const texto = await respuesta.text();
-    parrafoEstado.textContent = texto;
-  } catch (error) {
-    parrafoEstado.textContent = `No se pudo consultar el estado: ${error.message}`;
-  }
-});
+  });
+}
