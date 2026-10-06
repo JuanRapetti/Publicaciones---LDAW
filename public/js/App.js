@@ -214,7 +214,10 @@ function renderizarPublicaciones() {
 // ==========================================
 
 async function cargarPublicaciones(forzarError = false) {
-  if (estado) estado.textContent = "Cargando publicaciones...";
+  if (estado) {
+    estado.textContent = "Cargando publicaciones...";
+    estado.dataset.tipo = "";
+  }
   if (botonActualizar) botonActualizar.disabled = true;
   if (botonForzarError) botonForzarError.disabled = true;
 
@@ -226,9 +229,15 @@ async function cargarPublicaciones(forzarError = false) {
     const datos = await respuesta.json();
     repositorio.cargarDesde(datos);
     renderizarPublicaciones();
-    if (estado) estado.textContent = `${datos.length} publicaciones recibidas`;
+    if (estado) {
+      estado.textContent = `${datos.length} publicaciones recibidas`;
+      estado.dataset.tipo = "exito"; // <-- Mensaje de éxito en verde
+    }
   } catch (error) {
-    if (estado) estado.textContent = `Error: ${error.message}`;
+    if (estado) {
+      estado.textContent = `Error: ${error.message}`;
+      estado.dataset.tipo = "error"; // <-- Mensaje de error en ROJO
+    }
   } finally {
     if (botonActualizar) botonActualizar.disabled = false;
     if (botonForzarError) botonForzarError.disabled = false;
@@ -238,15 +247,23 @@ async function cargarPublicaciones(forzarError = false) {
 async function manejarEnvio(evento) {
   evento.preventDefault();
 
+  // 1. VALIDACIÓN DEL CLIENTE: Si falla algún campo, mostramos la caja roja inmediatamente
   if (!validarTitulo(true) || !validarAutor(true) || !validarPrecio(true)) {
+    if (estado) {
+      estado.textContent = "Error: Por favor, complete todos los campos obligatorios correctamente.";
+      estado.dataset.tipo = "error"; // <-- Pinta la caja de ROJO en el cliente
+    }
     return;
   }
 
   if (botonEnviar) botonEnviar.disabled = true;
-  if (estado) estado.textContent = "Publicando...";
+  if (estado) {
+    estado.textContent = "Publicando...";
+    estado.dataset.tipo = ""; // Limpiamos el tipo mientras procesa
+  }
 
   try {
-    // 1. Enviamos el formulario al servidor mediante fetch con urlencoded (Clase 16)
+    // 2. Envío asíncrono al servidor (Clase 16)
     const respuesta = await fetch(formPublicacion.action, {
       method: formPublicacion.method,
       headers: {
@@ -260,15 +277,21 @@ async function manejarEnvio(evento) {
       throw new Error(errorTexto || "Error al realizar la publicación");
     }
 
-    if (estado) estado.textContent = "Publicación agregada con éxito";
+    if (estado) {
+      estado.textContent = "Publicación agregada con éxito";
+      estado.dataset.tipo = "exito"; // <-- Pinta la caja de VERDE
+    }
 
-    // 2. Si fue exitoso, limpiamos el formulario y refrescamos la lista desde el servidor
+    // 3. Limpieza y refresco
     formPublicacion.reset();
     actualizarCamposEspecificos();
     actualizarVistaPrevia();
     await cargarPublicaciones();
   } catch (error) {
-    if (estado) estado.textContent = `Error: ${error.message}`;
+    if (estado) {
+      estado.textContent = `Error: ${error.message}`;
+      estado.dataset.tipo = "error"; // <-- Pinta la caja de ROJO si el servidor responde error (400)
+    }
   } finally {
     actualizarEstadoFormulario();
   }

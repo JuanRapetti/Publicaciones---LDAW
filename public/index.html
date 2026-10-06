@@ -9,6 +9,7 @@
   <body>
     <h1>Gestor de Publicaciones de la Comunidad</h1>
 
+    <!-- Panel de Estado (Clase 15) -->
     <section id="panel-estado">
       <h2>Estado de la Comunidad</h2>
       <button type="button" id="consultar">Consultar estado</button>
@@ -18,13 +19,14 @@
       <p id="parrafo-estado"></p>
     </section>
 
-    <!-- Panel de control asíncrono y mensajes de estado -->
+    <!-- Panel de control asíncrono (Clases 10-11) -->
     <section id="panel-control">
       <button type="button" id="boton-actualizar">Actualizar</button>
       <button type="button" id="boton-forzar-error">Forzar error</button>
       <p id="estado"></p>
     </section>
 
+    <!-- Formulario de Publicación (Clases 8, 10-11 y 16) -->
     <form id="form-publicacion" action="/publicaciones" method="post">
       <div>
         <input 
@@ -70,7 +72,7 @@
         <small id="ayuda-email"></small>
       </div>
 
-      <!-- Campo Categoría (Exigido en Clase 16) -->
+      <!-- Categoría del Dominio (Clase 16) -->
       <div>
         <select id="categoria" name="categoria" required>
           <option value="general">General</option>
@@ -80,6 +82,7 @@
         </select>
       </div>
 
+      <!-- Tipo de Publicación para UI Reactiva (Clases 8 y 10-11) -->
       <div>
         <select id="tipo" name="tipo">
           <option value="venta">Venta</option>
@@ -87,14 +90,25 @@
         </select>
       </div>
 
+      <!-- Contenedor dinámico de campos (Precio/Stock o Modalidad/Duración) -->
       <div id="campos-especificos"></div>
 
       <button type="submit" id="boton-publicar" disabled>Publicar</button>
     </form>
 
+    <!-- Vista Previa Reactiva (Clases 8 y 10-11) -->
     <h3>Vista Previa</h3>
     <output id="vista-previa"></output>
 
+    <!-- Diagnóstico de Formatos JSON / XML (Clase 18) -->
+    <section id="panel-diagnostico">
+      <h3>Diagnóstico de Formatos</h3>
+      <button type="button" id="ver-json">Ver JSON</button>
+      <button type="button" id="ver-xml">Ver XML</button>
+      <ul id="diagnostico-lista"></ul>
+    </section>
+
+    <!-- Listado de Publicaciones -->
     <h3>Publicaciones</h3>
     <section id="lista-publicaciones"></section>
 
