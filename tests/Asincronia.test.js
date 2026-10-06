@@ -1,4 +1,4 @@
-import { Publicacion } from "../js/Publicacion.js";
+import { Publicacion } from "../src/Publicacion.js";
 
 describe("Publicacion.revisar", () => {
   test("aprueba la publicación cuando el servicio resuelve aprobado", async () => {

@@ -1,5 +1,5 @@
-import { Publicacion } from "../js/Publicacion.js";
-import { RepositorioPublicaciones } from "../js/RepositorioPublicaciones.js";
+import { Publicacion } from "../src/Publicacion.js";
+import { RepositorioPublicaciones } from "../src/RepositorioPublicaciones.js";
 
 describe("Publicacion reportes", () => {
   test("una publicación nueva no requiere revisión", () => {

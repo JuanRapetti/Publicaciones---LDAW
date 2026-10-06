@@ -1,5 +1,5 @@
-import Publicacion from "../js/Publicacion.js";
-import Usuario from "../js/Usuario.js";
+import Publicacion from "../src/Publicacion.js";
+import Usuario from "../src/Usuario.js";
 
 describe("Publicacion", () => {
   let autorPrueba;

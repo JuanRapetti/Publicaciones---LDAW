@@ -1,8 +1,8 @@
-import RepositorioPublicaciones from "../js/RepositorioPublicaciones.js";
-import Publicacion from "../js/Publicacion.js";
-import PublicacionVenta from "../js/PublicacionVenta.js";
-import PublicacionServicio from "../js/PublicacionServicio.js";
-import Usuario from "../js/Usuario.js";
+import RepositorioPublicaciones from "../src/RepositorioPublicaciones.js";
+import Publicacion from "../src/Publicacion.js";
+import PublicacionVenta from "../src/PublicacionVenta.js";
+import PublicacionServicio from "../src/PublicacionServicio.js";
+import Usuario from "../src/Usuario.js";
 
 describe("RepositorioPublicaciones", () => {
   let repositorio;
