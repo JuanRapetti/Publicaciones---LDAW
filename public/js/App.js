@@ -1,8 +1,3 @@
-import Usuario from "../../src/Usuario.js";
-import PublicacionVenta from "../../src/PublicacionVenta.js";
-import PublicacionServicio from "../../src/PublicacionServicio.js";
-import RepositorioPublicaciones from "../../src/RepositorioPublicaciones.js";
-
 // ==========================================
 // 1. REFERENCIAS AL DOM E INICIALIZACIÓN
 // ==========================================
@@ -26,10 +21,22 @@ const botonEnviar = document.querySelector("#boton-publicar");
 const errorTitulo = document.querySelector("#error-titulo");
 const errorAutor = document.querySelector("#error-autor");
 
-const repositorio = new RepositorioPublicaciones();
+// Colección local para almacenar los datos planos que llegan en JSON desde Express
+const repositorio = {
+  publicaciones: [],
+  cargarDesde(datos) {
+    this.publicaciones = datos;
+  },
+  obtenerTodas() {
+    return this.publicaciones;
+  },
+  buscarPorId(id) {
+    return this.publicaciones.find((p) => Number(p.id) === Number(id));
+  },
+};
 
 // ==========================================
-// 2. FUNCIONES AUXILIARES
+// 2. FUNCIONES AUXILIARES Y DIAGNÓSTICO
 // ==========================================
 
 function esperar(ms) {
@@ -58,6 +65,7 @@ function mostrarDiagnostico(publicaciones) {
 // ==========================================
 
 function validarTitulo(mostrarError = true) {
+  if (!inputTitulo) return true;
   const valido = inputTitulo.value.trim().length >= 5;
   inputTitulo.classList.toggle("valido", valido);
   inputTitulo.classList.toggle("invalido", !valido && mostrarError);
@@ -69,6 +77,7 @@ function validarTitulo(mostrarError = true) {
 }
 
 function validarAutor(mostrarError = true) {
+  if (!inputAutor) return true;
   const valido = inputAutor.value.trim().length >= 3;
   inputAutor.classList.toggle("valido", valido);
   inputAutor.classList.toggle("invalido", !valido && mostrarError);
@@ -80,7 +89,7 @@ function validarAutor(mostrarError = true) {
 }
 
 function validarPrecio(mostrarError = true) {
-  if (selectTipo.value !== "venta") return true;
+  if (!selectTipo || selectTipo.value !== "venta") return true;
   const inputPrecio = document.querySelector("#precio");
   if (!inputPrecio) return false;
 
@@ -101,19 +110,20 @@ function actualizarEstadoFormulario() {
 }
 
 function actualizarVistaPrevia() {
-  const tituloText = inputTitulo.value.trim() || "Sin título";
-  const autorText = inputAutor.value.trim() || "...";
-  const tipoText = selectTipo.value;
+  if (!divVistaPrevia) return;
+  const tituloText = inputTitulo?.value.trim() || "Sin título";
+  const autorText = inputAutor?.value.trim() || "...";
+  const tipoText = selectTipo?.value || "";
 
   divVistaPrevia.textContent = `${tituloText} — ${autorText} (${tipoText})`;
 }
 
 function mostrarAyudaEmail() {
-  ayudaEmail.textContent = "Usá un email válido del autor";
+  if (ayudaEmail) ayudaEmail.textContent = "Usá un email válido del autor";
 }
 
 function ocultarAyudaEmail() {
-  ayudaEmail.textContent = "";
+  if (ayudaEmail) ayudaEmail.textContent = "";
 }
 
 // ==========================================
@@ -121,17 +131,22 @@ function ocultarAyudaEmail() {
 // ==========================================
 
 function actualizarCamposEspecificos() {
+  if (!camposEspecificos || !selectTipo) return;
+
   if (selectTipo.value === "venta") {
     camposEspecificos.innerHTML = `
       <input id="precio" name="precio" type="number" placeholder="Precio" required>
       <input id="stock" name="stock" type="number" value="1" placeholder="Stock" required>
     `;
     const inputPrecio = document.querySelector("#precio");
-    inputPrecio.addEventListener("input", () => {
-      validarPrecio(false);
-      actualizarEstadoFormulario();
-    });
-    inputPrecio.addEventListener("blur", () => validarPrecio(true));
+    if (inputPrecio) {
+      inputPrecio.addEventListener("input", () => {
+        validarPrecio(false);
+        actualizarEstadoFormulario();
+        actualizarVistaPrevia();
+      });
+      inputPrecio.addEventListener("blur", () => validarPrecio(true));
+    }
   } else {
     camposEspecificos.innerHTML = `
       <select id="modalidad" name="modalidad">
@@ -145,39 +160,24 @@ function actualizarCamposEspecificos() {
 }
 
 // ==========================================
-// 5. DOMINIO Y RENDERIZADO
+// 5. RENDERIZADO EN EL DOM
 // ==========================================
 
-function crearPublicacionDesdeFormulario() {
-  const usuario = new Usuario(inputAutor.value, inputEmail.value);
-  if (selectTipo.value === "venta") {
-    return new PublicacionVenta(
-      inputTitulo.value,
-      inputDescripcion.value,
-      usuario,
-      Number(document.querySelector("#precio").value),
-    );
-  }
-  return new PublicacionServicio(
-    inputTitulo.value,
-    inputDescripcion.value,
-    usuario,
-    document.querySelector("#modalidad").value,
-    Number(document.querySelector("#duracion").value),
-  );
-}
-
 function agregarTarjeta(publicacion) {
+  if (!listaPublicaciones) return;
+
   const tarjeta = document.createElement("article");
   tarjeta.classList.add("tarjeta");
   tarjeta.dataset.id = publicacion.id;
 
   const resumen = document.createElement("p");
-  resumen.textContent = publicacion.mostrarResumen();
+  const desc = publicacion.descripcion || publicacion.contenido || "";
+  resumen.textContent = `${publicacion.titulo || "Sin título"} — ${publicacion.autor || "Anónimo"}: ${desc}`;
   tarjeta.appendChild(resumen);
 
   const estadoElemento = document.createElement("p");
-  let textoEstado = publicacion.estaActiva() ? "Activa" : "Inactiva";
+  const estaActiva = publicacion.activa !== undefined ? publicacion.activa : true;
+  let textoEstado = estaActiva ? "Activa" : "Inactiva";
   if (publicacion.destacada) {
     textoEstado += " — ★ Destacada";
   }
@@ -195,7 +195,7 @@ function agregarTarjeta(publicacion) {
   botonBaja.classList.add("button");
   botonBaja.textContent = "Dar de baja";
   botonBaja.dataset.accion = "baja";
-  if (!publicacion.estaActiva()) {
+  if (!estaActiva) {
     botonBaja.disabled = true;
   }
   tarjeta.appendChild(botonBaja);
@@ -204,32 +204,31 @@ function agregarTarjeta(publicacion) {
 }
 
 function renderizarPublicaciones() {
+  if (!listaPublicaciones) return;
   listaPublicaciones.innerHTML = "";
   repositorio.obtenerTodas().forEach((pub) => agregarTarjeta(pub));
 }
 
 // ==========================================
-// 6. ASINCRONÍA Y HANDLERS DE EVENTOS
+// 6. ASINCRONÍA Y HANDLERS HTTP (FETCH)
 // ==========================================
 
 async function cargarPublicaciones(forzarError = false) {
-  estado.textContent = "Cargando publicaciones...";
+  if (estado) estado.textContent = "Cargando publicaciones...";
   if (botonActualizar) botonActualizar.disabled = true;
   if (botonForzarError) botonForzarError.disabled = true;
 
   try {
-    const url = forzarError
-      ? "/api/publicaciones?error=1"
-      : "/api/publicaciones";
+    const url = forzarError ? "/api/publicaciones?error=1" : "/publicaciones";
     const respuesta = await fetch(url);
     if (!respuesta.ok) throw new Error("La respuesta no fue exitosa");
 
     const datos = await respuesta.json();
     repositorio.cargarDesde(datos);
     renderizarPublicaciones();
-    estado.textContent = `${datos.length} publicaciones recibidas`;
+    if (estado) estado.textContent = `${datos.length} publicaciones recibidas`;
   } catch (error) {
-    estado.textContent = `Error: ${error.message}`;
+    if (estado) estado.textContent = `Error: ${error.message}`;
   } finally {
     if (botonActualizar) botonActualizar.disabled = false;
     if (botonForzarError) botonForzarError.disabled = false;
@@ -238,27 +237,38 @@ async function cargarPublicaciones(forzarError = false) {
 
 async function manejarEnvio(evento) {
   evento.preventDefault();
-  if (!validarTitulo(true) || !validarAutor(true) || !validarPrecio(true))
-    return;
 
-  botonEnviar.disabled = true;
-  estado.textContent = "Publicando...";
+  if (!validarTitulo(true) || !validarAutor(true) || !validarPrecio(true)) {
+    return;
+  }
+
+  if (botonEnviar) botonEnviar.disabled = true;
+  if (estado) estado.textContent = "Publicando...";
 
   try {
-    await esperar(800);
-    const publicacion = crearPublicacionDesdeFormulario();
-    const agregada = await repositorio.agregar(publicacion);
+    // 1. Enviamos el formulario al servidor mediante fetch con urlencoded (Clase 16)
+    const respuesta = await fetch(formPublicacion.action, {
+      method: formPublicacion.method,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams(new FormData(formPublicacion)),
+    });
 
-    if (agregada) {
-      renderizarPublicaciones();
-      estado.textContent = "Publicación agregada con éxito";
-      formPublicacion.reset();
-      actualizarVistaPrevia();
-    } else {
-      throw new Error("La publicación no superó las reglas del repositorio");
+    if (!respuesta.ok) {
+      const errorTexto = await respuesta.text();
+      throw new Error(errorTexto || "Error al realizar la publicación");
     }
+
+    if (estado) estado.textContent = "Publicación agregada con éxito";
+
+    // 2. Si fue exitoso, limpiamos el formulario y refrescamos la lista desde el servidor
+    formPublicacion.reset();
+    actualizarCamposEspecificos();
+    actualizarVistaPrevia();
+    await cargarPublicaciones();
   } catch (error) {
-    estado.textContent = `Error: ${error.message}`;
+    if (estado) estado.textContent = `Error: ${error.message}`;
   } finally {
     actualizarEstadoFormulario();
   }
@@ -266,7 +276,7 @@ async function manejarEnvio(evento) {
 
 function manejarAccion(evento) {
   const boton = evento.target.closest("button[data-accion]");
-  if (!boton || !listaPublicaciones.contains(boton)) return;
+  if (!boton || !listaPublicaciones?.contains(boton)) return;
 
   const tarjeta = boton.closest("[data-id]");
   const id = Number(tarjeta.dataset.id);
@@ -275,8 +285,8 @@ function manejarAccion(evento) {
   const publicacion = repositorio.buscarPorId(id);
   if (!publicacion) return;
 
-  if (accion === "baja") publicacion.darDeBaja();
-  if (accion === "destacar") publicacion.destacar();
+  if (accion === "baja") publicacion.activa = false;
+  if (accion === "destacar") publicacion.destacada = !publicacion.destacada;
 
   renderizarPublicaciones();
 }
@@ -285,100 +295,118 @@ function manejarAccion(evento) {
 // 7. LISTENERS E INICIALIZACIÓN
 // ==========================================
 
-// Observadores de consola
-inputTitulo.addEventListener("input", observarEvento);
-selectTipo.addEventListener("change", observarEvento);
+if (inputTitulo) inputTitulo.addEventListener("input", observarEvento);
+if (selectTipo) selectTipo.addEventListener("change", observarEvento);
 
-// Ayuda email
-inputEmail.addEventListener("focus", mostrarAyudaEmail);
-inputEmail.addEventListener("blur", ocultarAyudaEmail);
+if (inputEmail) {
+  inputEmail.addEventListener("focus", mostrarAyudaEmail);
+  inputEmail.addEventListener("blur", ocultarAyudaEmail);
+}
 
-// Validaciones y estado del formulario
-inputTitulo.addEventListener("input", () => validarTitulo(false));
-inputTitulo.addEventListener("blur", () => validarTitulo(true));
+if (inputTitulo) {
+  inputTitulo.addEventListener("input", () => validarTitulo(false));
+  inputTitulo.addEventListener("blur", () => validarTitulo(true));
+}
 
-inputAutor.addEventListener("input", () => validarAutor(false));
-inputAutor.addEventListener("blur", () => validarAutor(true));
+if (inputAutor) {
+  inputAutor.addEventListener("input", () => validarAutor(false));
+  inputAutor.addEventListener("blur", () => validarAutor(true));
+}
 
-formPublicacion.addEventListener("input", actualizarEstadoFormulario);
-selectTipo.addEventListener("change", () => {
-  actualizarCamposEspecificos();
-  actualizarVistaPrevia();
-});
+if (formPublicacion) {
+  formPublicacion.addEventListener("input", () => {
+    actualizarVistaPrevia();
+    actualizarEstadoFormulario();
+  });
+  formPublicacion.addEventListener("submit", manejarEnvio);
+}
 
-// Vista previa reactiva
-[inputTitulo, inputAutor, inputDescripcion, selectTipo].forEach((control) => {
-  control.addEventListener("input", actualizarVistaPrevia);
-});
+if (selectTipo) {
+  selectTipo.addEventListener("change", () => {
+    actualizarCamposEspecificos();
+    actualizarVistaPrevia();
+  });
+}
 
-// Envíos y acciones
-formPublicacion.addEventListener("submit", manejarEnvio);
-listaPublicaciones.addEventListener("click", manejarAccion);
+if (listaPublicaciones) {
+  listaPublicaciones.addEventListener("click", manejarAccion);
+}
 
-if (botonActualizar)
+if (botonActualizar) {
   botonActualizar.addEventListener("click", () => cargarPublicaciones(false));
-if (botonForzarError)
+}
+if (botonForzarError) {
   botonForzarError.addEventListener("click", () => cargarPublicaciones(true));
+}
 
-// PASO 5A y 5B: Diagnóstico JSON y XML en Cliente
+// Diagnóstico JSON y XML en Cliente (Paso 5A y 5B)
 document.querySelector("#ver-json")?.addEventListener("click", async () => {
-  const texto = await fetch("/datos/publicaciones.json").then((r) => r.text());
-  const publicaciones = JSON.parse(texto);
-  mostrarDiagnostico(publicaciones);
+  try {
+    const texto = await fetch("/datos/publicaciones.json").then((r) => r.text());
+    const publicaciones = JSON.parse(texto);
+    mostrarDiagnostico(publicaciones);
+  } catch (err) {
+    console.error(err);
+  }
 });
 
 document.querySelector("#ver-xml")?.addEventListener("click", async () => {
-  const texto = await fetch("/datos/publicaciones.xml").then((r) => r.text());
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(texto, "application/xml");
+  try {
+    const texto = await fetch("/datos/publicaciones.xml").then((r) => r.text());
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(texto, "application/xml");
 
-  const nodos = Array.from(xmlDoc.querySelectorAll("publicacion"));
-  const publicaciones = nodos.map((nodo) => ({
-    id: Number(nodo.getAttribute("id")),
-    autor: nodo.querySelector("autor")?.textContent ?? "",
-    titulo: nodo.querySelector("titulo")?.textContent ?? "",
-    contenido: nodo.querySelector("contenido")?.textContent ?? "",
-    activa: nodo.querySelector("activa")?.textContent === "true",
-    destacada: nodo.querySelector("destacada")?.textContent === "true",
-    estado: nodo.querySelector("estado")?.textContent ?? "",
-  }));
+    const nodos = Array.from(xmlDoc.querySelectorAll("publicacion"));
+    const publicaciones = nodos.map((nodo) => ({
+      id: Number(nodo.getAttribute("id")),
+      autor: nodo.querySelector("autor")?.textContent ?? "",
+      titulo: nodo.querySelector("titulo")?.textContent ?? "",
+      contenido: nodo.querySelector("contenido")?.textContent ?? "",
+      activa: nodo.querySelector("activa")?.textContent === "true",
+      destacada: nodo.querySelector("destacada")?.textContent === "true",
+      estado: nodo.querySelector("estado")?.textContent ?? "",
+    }));
 
-  mostrarDiagnostico(publicaciones);
+    mostrarDiagnostico(publicaciones);
+  } catch (err) {
+    console.error(err);
+  }
 });
 
-// Carga inicial
-actualizarCamposEspecificos();
-actualizarVistaPrevia();
-
-// tp15
+// Consultas de estado
 const parrafoEstado = document.querySelector("#parrafo-estado");
 const botonConsultar = document.querySelector("#consultar");
 const botonConsultarInactivas = document.querySelector("#consultar-inactivas");
 
 if (botonConsultar) {
   botonConsultar.addEventListener("click", async () => {
-    parrafoEstado.textContent = "Consultando...";
+    if (parrafoEstado) parrafoEstado.textContent = "Consultando...";
     try {
       const respuesta = await fetch("/estado-comunidad");
       if (!respuesta.ok) throw new Error("La respuesta no fue exitosa");
       const texto = await respuesta.text();
-      parrafoEstado.textContent = texto;
+      if (parrafoEstado) parrafoEstado.textContent = texto;
     } catch (error) {
-      parrafoEstado.textContent = `No se pudo consultar el estado: ${error.message}`;
+      if (parrafoEstado) parrafoEstado.textContent = `No se pudo consultar el estado: ${error.message}`;
     }
   });
 }
 
 if (botonConsultarInactivas) {
   botonConsultarInactivas.addEventListener("click", async () => {
-    parrafoEstado.textContent = "Consultando inactivas...";
+    if (parrafoEstado) parrafoEstado.textContent = "Consultando inactivas...";
     try {
       const respuesta = await fetch("/estado-inactivas");
       if (!respuesta.ok) throw new Error("La respuesta no fue exitosa");
       const texto = await respuesta.text();
-      parrafoEstado.textContent = texto;
+      if (parrafoEstado) parrafoEstado.textContent = texto;
     } catch (error) {
-      parrafoEstado.textContent = `No se pudo consultar el estado: ${error.message}`;
+      if (parrafoEstado) parrafoEstado.textContent = `No se pudo consultar el estado: ${error.message}`;
     }
   });
 }
+
+// Carga inicial al refrescar o entrar a la página
+actualizarCamposEspecificos();
+actualizarVistaPrevia();
+cargarPublicaciones();

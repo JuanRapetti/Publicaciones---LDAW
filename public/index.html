@@ -25,17 +25,29 @@
       <p id="estado"></p>
     </section>
 
-    <form id="form-publicacion">
+    <form id="form-publicacion" action="/publicaciones" method="post">
       <div>
-        <input id="titulo" name="titulo" placeholder="Título" required />
+        <input 
+          id="titulo" 
+          name="titulo" 
+          placeholder="Título" 
+          minlength="5" 
+          maxlength="80" 
+          required 
+        />
         <small id="error-titulo" class="mensaje-error"></small>
       </div>
 
-      <textarea
-        id="descripcion"
-        name="descripcion"
-        placeholder="Descripción"
-      ></textarea>
+      <div>
+        <textarea
+          id="descripcion"
+          name="descripcion"
+          placeholder="Descripción"
+          minlength="20"
+          maxlength="500"
+          required
+        ></textarea>
+      </div>
 
       <div>
         <input
@@ -58,10 +70,22 @@
         <small id="ayuda-email"></small>
       </div>
 
-      <select id="tipo" name="tipo">
-        <option value="venta">Venta</option>
-        <option value="servicio">Servicio</option>
-      </select>
+      <!-- Campo Categoría (Exigido en Clase 16) -->
+      <div>
+        <select id="categoria" name="categoria" required>
+          <option value="general">General</option>
+          <option value="aviso">Aviso</option>
+          <option value="evento">Evento</option>
+          <option value="compraventa">Compra-venta</option>
+        </select>
+      </div>
+
+      <div>
+        <select id="tipo" name="tipo">
+          <option value="venta">Venta</option>
+          <option value="servicio">Servicio</option>
+        </select>
+      </div>
 
       <div id="campos-especificos"></div>
 
@@ -74,6 +98,6 @@
     <h3>Publicaciones</h3>
     <section id="lista-publicaciones"></section>
 
-    <script type="module" src="/js/main.js"></script>
+    <script type="module" src="/js/App.js"></script>
   </body>
 </html>

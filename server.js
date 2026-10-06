@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { RepositorioPublicaciones } from "./src/RepositorioPublicaciones.js";
 import { Publicacion } from "./src/Publicacion.js";
 import { paraExponer, convertirAXML } from "./src/Formatos.js";
-import crearRouterPublicaciones from "./api/publicaciones.routes.js";
+import crearRouterPublicaciones from "./routes/publicaciones.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,31 +12,35 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 3000;
 
-// PASO 7 & 8D: Ruta de persistencia e instancia del repositorio
+// Ruta de persistencia e instancia del repositorio
 const RUTA_DATOS = path.join(__dirname, "data", "publicaciones.json");
 const repositorio = new RepositorioPublicaciones(RUTA_DATOS);
 
 // Precarga e inicialización asíncrona
 await repositorio.cargar();
 
+// Precarga con descripciones >= 20 caracteres y categorías válidas
 if (repositorio.listar().length === 0) {
   const pub1 = new Publicacion(
     1,
     "Ana",
     "Apuntes de Redes",
-    "Excelente estado",
+    "Apuntes completos de Redes en excelente estado para la cursada",
+    "aviso"
   );
   const pub2 = new Publicacion(
     2,
     "Bruno",
     "Calculadora Casio",
-    "Funciona bien",
+    "Calculadora Casio en muy buen estado y funcionando perfectamente",
+    "compraventa"
   );
   const pub3 = new Publicacion(
     3,
     "Carla",
     "Clases de Álgebra",
-    "Modalidad virtual",
+    "Clases particulares de Álgebra con modalidad virtual e individual",
+    "general"
   );
   pub3.darDeBaja();
 
@@ -45,19 +49,21 @@ if (repositorio.listar().length === 0) {
   await repositorio.agregar(pub3);
 }
 
+// Middlewares (deben estar ANTES de app.use("/publicaciones", ...))
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
+app.use(express.urlencoded({ extended: false })); // <-- Permite leer el cuerpo de los formularios
 
-// PASO 5C: Montar router bajo /publicaciones
+// Montar router de publicaciones
 app.use("/publicaciones", crearRouterPublicaciones(repositorio));
 
-// PASO 4A: Endpoint GET /datos/publicaciones.json
+// Endpoint GET /datos/publicaciones.json
 app.get("/datos/publicaciones.json", (req, res) => {
   const publicas = repositorio.listar().map(paraExponer);
   res.json(publicas);
 });
 
-// PASO 4B: Endpoint GET /datos/publicaciones.xml
+// Endpoint GET /datos/publicaciones.xml
 app.get("/datos/publicaciones.xml", (req, res) => {
   const xml = convertirAXML(repositorio.listar());
   res.type("application/xml").send(xml);
